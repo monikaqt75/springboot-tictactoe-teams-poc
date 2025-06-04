@@ -38,22 +38,22 @@ cd springboot-tictactoe
 springboot-tictactoe
 ├── .github
 │   └── workflows
-│       └── [deploy.yml](http://_vscodecontentref_/0)
+│       └── [deploy.yml]
 ├── src
 │   └── main
 │       ├── java
 │       │   └── com
 │       │       └── rehan
 │       │           └── tictactoe
-│       │               └── [Application.java](http://_vscodecontentref_/1)
+│       │               └── [Application.java]
 │       └── resources
-│           ├── [application.properties](http://_vscodecontentref_/2)
+│           ├── [application.properties]
 │           └── static
-│               ├── [app.js](http://_vscodecontentref_/3)
-│               ├── [index.html](http://_vscodecontentref_/4)
-│               └── [style.css](http://_vscodecontentref_/5)
-├── [pom.xml](http://_vscodecontentref_/6)
-└── [README.md](http://_vscodecontentref_/7)
+│               ├── [app.js]
+│               ├── [index.html]
+│               └── [style.css]
+├── [pom.xml]
+└── [README.md]
 ```
 
 ### Run the Application
