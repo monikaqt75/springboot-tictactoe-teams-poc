@@ -2,17 +2,7 @@ name: Build and Deploy Application
 
 on:
   workflow_dispatch:
-    inputs:
-      deploy_target:
-        description: 'Choose Deployment target'
-        required: true
-        default: 'azure'
-        type: choice
-        options:
-          - azure
-          - render
-          - oci
-
+   
 permissions:
   contents: read
 
@@ -59,16 +49,7 @@ jobs:
           name: springboot-app
           path: target/
 
-      - name: Deploy to Azure Web App
-        if: ${{ github.event.inputs.deploy_target == 'azure' }}
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_CREDENTIALS }}
-          package: target/*.jar
-
       - name: Deploy to Render
-        if: ${{ github.event.inputs.deploy_target == 'render' }}
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
@@ -78,34 +59,4 @@ jobs:
             -H "Authorization: Bearer ${RENDER_API_KEY}" \
             -H "Content-Type: application/json" \
             -d '{"clearCache": "do_not_clear"}'
-        shell: bash
-
-      - name: Deploy to OCI VM.Standard.E2.Micro
-        if: ${{ github.event.inputs.deploy_target == 'oci' }}
-        env:
-          OCI_USER: ${{ secrets.OCI_USER }}
-          OCI_HOST: ${{ secrets.OCI_HOST }}
-          OCI_SSH_KEY: ${{ secrets.OCI_SSH_KEY }}
-        run: |
-          set -euo pipefail
-          echo "${OCI_SSH_KEY}" > oci_key.pem
-          chmod 600 oci_key.pem
-          scp -o StrictHostKeyChecking=no -i oci_key.pem target/*.jar ${OCI_USER}@${OCI_HOST}:/home/${OCI_USER}/app.jar
-          ssh -o StrictHostKeyChecking=no -i oci_key.pem ${OCI_USER}@${OCI_HOST} << 'EOF'
-            sudo systemctl stop springboot-app || true
-            sudo mv /home/${OCI_USER}/app.jar /opt/springboot/app.jar
-            sudo systemctl start springboot-app
-          EOF
-        shell: bash
-
-      - name: Deployment Success Notification
-        if: success()
-        run: echo "✅ Deployment succeeded!"
-        shell: bash
-
-      - name: Deployment Failure Notification
-        if: failure()
-        run: |
-          echo "❌ Deployment failed. Check logs for details."
-          exit 1
         shell: bash
