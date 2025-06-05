@@ -1,4 +1,4 @@
-name: Java CI Pipeline
+name: Build Pipeline
 
 on:
   workflow_dispatch:
@@ -36,13 +36,13 @@ jobs:
           mvn clean package --batch-mode --no-transfer-progress > build_output.log 2>&1
           BUILD_STATUS=$?
 
-          echo "::group::Maven Output (last 30 lines)"
-          tail -n 30 build_output.log || echo "No output file"
+          echo "::group::Maven Output (tail)"
+          tail -n 50 build_output.log || echo "No output file"
           echo "::endgroup::"
 
           if [ $BUILD_STATUS -ne 0 ]; then
-            echo "Build failed, capturing last 100 lines for Slack..."
-            tail -n 100 build_output.log | tr '\n' ' ' | sed 's/"/\\"/g' > error.log
+            echo "Build failed, capturing logs..."
+            tail -n 50 build_output.log | tr '\n' ' ' | sed 's/"/\\"/g' > error.log
             ERROR_MSG=$(cat error.log)
             echo "error_message=$ERROR_MSG" >> "$GITHUB_OUTPUT"
           fi
@@ -50,54 +50,22 @@ jobs:
           exit $BUILD_STATUS
         shell: bash
 
-      - name: Show Captured Error Message Output
+      - name: Show Error Message Output
         if: failure()
         run: |
           echo "Captured Error Output:"
           echo "${{ steps.build_app.outputs.error_message }}"
 
-      - name: Slack Notification with Buttons
+      - name: Slack Notification - Build Failed
         if: failure()
-        run: |
-          curl -X POST https://slack.com/api/chat.postMessage \
-            -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
-            -H 'Content-type: application/json' \
-            --data '{
-             "channel": "#build-notifications",
-             "text": ":x: *Maven Build Failed* for *${{ github.repository }}*",
-              "attachments": [
-                {
-                  "text": "Choose an action below:",
-                  "fallback": "You are unable to choose an action",
-                  "callback_id": "ci_pipeline_action",
-                  "color": "#D00000",
-                  "attachment_type": "default",
-                  "actions": [
-                    {
-                      "name": "explain",
-                      "text": "Explain",
-                      "type": "button",
-                      "value": "explain"
-                    },
-                    {
-                      "name": "fix",
-                      "text": "Fix",
-                      "type": "button",
-                      "value": "fix"
-                    },
-                    {
-                    "name": "rerun",
-                    "text": "Re-run",
-                    "type": "button",
-                    "value": "rerun"
-                  }
-                  ]
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": ":x: *Maven Build Failed* for *${{ github.repository }}* :boom:\n*Commit:* `${{ github.sha }}`\n*Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n*Error Log:*```${{ steps.build_app.outputs.error_message || 'No error log captured.' }}```"
             }
-          ]
-          }'
         env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: Slack Notification - Build Succeeded
         if: success()
@@ -105,14 +73,7 @@ jobs:
         with:
           payload: |
             {
-              "text": ":white_check_mark: *Maven Build Succeeded* for *${{ github.repository }}* :rocket:\n*Commit:* `${{ github.sha }}`\n*Author:* ${{ github.actor }}\n*Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": ":white_check_mark: *Maven Build Succeeded* for *${{ github.repository }}* :rocket:\n*Commit:* `${{ github.sha }}`\n*Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-
-      # - name: Upload Full Build Log
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: build-log
-      #     path: build_output.log
