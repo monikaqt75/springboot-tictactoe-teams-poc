@@ -72,11 +72,45 @@ jobs:
         with:
           payload: |
             {
-              "channel": "C0763JX6X6X",
-              "text": "🚀 GitHub Actions workflow ran successfully!"
+              "channel": "C0763JX6X6X",  # Replace with your channel ID
+              "text": "Deployment requires approval!",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":rocket: *Deployment Ready* \nPlease approve or reject the deployment."
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Approve"
+                      },
+                      "style": "primary",
+                      "value": "approve",
+                      "action_id": "approve_button"
+                    },
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Reject"
+                      },
+                      "style": "danger",
+                      "value": "reject",
+                      "action_id": "reject_button"
+                    }
+                  ]
+                }
+              ]
             }
         env:
-         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}    
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
       # - name: Slack Notification - Build Succeeded
       #   if: success()
