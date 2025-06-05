@@ -73,7 +73,7 @@ jobs:
         with:
           payload: |
             {
-              "channel": "#github-actions",
+              "channel": "C0763JX6X6X",
               "blocks": [
                 {
                   "type": "section",
