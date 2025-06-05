@@ -56,74 +56,48 @@ jobs:
           echo "Captured Error Output:"
           echo "${{ steps.build_app.outputs.error_message }}"
 
-      - name: Slack Notification - Build Failed with Buttons and Logs
+      - name: Slack Notification with Buttons
         if: failure()
         run: |
-          # Compose and send Slack message with buttons and logs
           curl -X POST https://slack.com/api/chat.postMessage \
             -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
-            -H "Content-type: application/json" \
-            --data "$(jq -n \
-              --arg channel "#build-notifications" \
-              --arg repo "${{ github.repository }}" \
-              --arg sha "${{ github.sha }}" \
-              --arg run_url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-              --arg actor "${{ github.actor }}" \
-              --arg error "${{ steps.build_app.outputs.error_message || "No error log captured." }}" \
-              '{
-                channel: $channel,
-                text: "*❌ Maven Build Failed for \($repo)*",
-                blocks: [
-                  {
-                    type: "section",
-                    text: {
-                      type: "mrkdwn",
-                      text: "*❌ Maven Build Failed for \($repo)*\n*Commit:* `\($sha)` by \($actor)\n*Run:* <\($run_url)|View in GitHub>"
-                    }
-                  },
-                  {
-                    type: "section",
-                    text: {
-                      type: "mrkdwn",
-                      text: "*Error Log:*\n```" + $error + "```"
-                    }
-                  },
-                  {
-                    type: "actions",
-                    elements: [
-                      {
-                        type: "button",
-                        text: {
-                          type: "plain_text",
-                          text: "Explain"
-                        },
-                        value: "explain",
-                        action_id: "explain"
-                      },
-                      {
-                        type: "button",
-                        text: {
-                          type: "plain_text",
-                          text: "Fix"
-                        },
-                        value: "fix",
-                        action_id: "fix"
-                      },
-                      {
-                        type: "button",
-                        text: {
-                          type: "plain_text",
-                          text: "Re-run"
-                        },
-                        value: "rerun",
-                        action_id: "rerun"
-                      }
-                    ]
+            -H 'Content-type: application/json' \
+            --data '{
+             "channel": "#build-notifications",
+             "text": ":x: *Maven Build Failed* for *${{ github.repository }}*",
+              "attachments": [
+                {
+                  "text": "Choose an action below:",
+                  "fallback": "You are unable to choose an action",
+                  "callback_id": "ci_pipeline_action",
+                  "color": "#D00000",
+                  "attachment_type": "default",
+                  "actions": [
+                    {
+                      "name": "explain",
+                      "text": "Explain",
+                      "type": "button",
+                      "value": "explain"
+                    },
+                    {
+                      "name": "fix",
+                      "text": "Fix",
+                      "type": "button",
+                      "value": "fix"
+                    },
+                    {
+                    "name": "rerun",
+                    "text": "Re-run",
+                    "type": "button",
+                    "value": "rerun"
                   }
-                ]
-              }')"
+                  ]
+            }
+          ]
+          }'
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
 
       - name: Slack Notification - Build Succeeded
         if: success()
@@ -136,9 +110,9 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
-      - name: Upload Full Build Log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: build_output.log
+      # - name: Upload Full Build Log
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: build-log
+      #     path: build_output.log
