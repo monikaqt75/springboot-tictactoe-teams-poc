@@ -2,7 +2,6 @@ name: Build Pipeline
 
 on:
   workflow_dispatch:
-
   push:
     branches:
       - master
@@ -27,15 +26,7 @@ jobs:
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
-          cache: maven
-
-      - name: Cache Maven Dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          cache: maven  
 
       - name: Build Application with Maven
         id: build_app
@@ -45,14 +36,14 @@ jobs:
         shell: bash
 
       - name: Run Tests
-        if: steps.build_app.outcome == 'success'
+        if: success()  
         run: |
           set -euo pipefail
           mvn test --batch-mode --no-transfer-progress
         shell: bash
 
       - name: Upload Build Artifact
-        if: steps.build_app.outcome == 'success'
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: springboot-app-${{ github.run_number }}
@@ -60,24 +51,24 @@ jobs:
           retention-days: 2
 
       - name: Slack Notification - Build Failed
-        if: steps.build_app.outcome == 'failure'
+        if: failure()
         uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
             {
-              "text": ":x: Maven Build Failed for ${{ github.repository }}\nCommit: ${{ github.sha }}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+              "text": ":x: Maven Build Failed for *${{ github.repository }}*\n> *Commit*: `${{ github.sha }}` - _${{ github.event.head_commit.message }}_\n> *Author*: ${{ github.actor }}\n> *Run*: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
               "channel": "#build-notifications"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: Slack Notification - Build Succeeded
-        if: steps.build_app.outcome == 'success'
+        if: success()
         uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
             {
-              "text": ":white_check_mark: Maven Build Succeeded for ${{ github.repository }}\nCommit: ${{ github.sha }}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+              "text": ":white_check_mark: Maven Build Succeeded for *${{ github.repository }}*\n> *Commit*: `${{ github.sha }}` - _${{ github.event.head_commit.message }}_\n> *Author*: ${{ github.actor }}\n> *Run*: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
               "channel": "#build-notifications"
             }
         env:
