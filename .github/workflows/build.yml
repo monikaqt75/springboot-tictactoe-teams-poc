@@ -132,8 +132,7 @@ jobs:
           method: files.uploadV2
           token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
-            channels: "C0763JX6X6X"
-            filename: "error.log"
-            filetype: "text"
-            title: "Build Error Log"
-            initial_comment: ":x: Build failed. Here's the full error log."              
+            channel_id: "C0763JX6X6X"
+            title: "🚨 Build Error Log"
+            file: "error.log"
+            initial_comment: ":x: Build failed. Here's the full error log."           
