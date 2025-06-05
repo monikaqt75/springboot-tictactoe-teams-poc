@@ -67,45 +67,56 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
-      - name: Slack Notification - Build Succeeded
-        if: success()
+      - name: Send Slack Notification
         uses: slackapi/slack-github-action@v1.24.0
         with:
           payload: |
-            {
+           {
               "channel": "C0763JX6X6X",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "🚀 New deployment is ready! Would you like to proceed?"
-                  }
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "Approve"
-                      },
-                      "style": "primary",
-                      "value": "approve"
-                    },
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "Reject"
-                      },
-                      "style": "danger",
-                      "value": "reject"
-                    }
-                  ]
-                }
-              ]
+              "text": "🚀 GitHub Actions workflow ran successfully!"
             }
         env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}    
+
+      # - name: Slack Notification - Build Succeeded
+      #   if: success()
+      #   uses: slackapi/slack-github-action@v1.24.0
+      #   with:
+      #     payload: |
+      #       {
+      #         "channel": "C0763JX6X6X",
+      #         "blocks": [
+      #           {
+      #             "type": "section",
+      #             "text": {
+      #               "type": "mrkdwn",
+      #               "text": "🚀 New deployment is ready! Would you like to proceed?"
+      #             }
+      #           },
+      #           {
+      #             "type": "actions",
+      #             "elements": [
+      #               {
+      #                 "type": "button",
+      #                 "text": {
+      #                   "type": "plain_text",
+      #                   "text": "Approve"
+      #                 },
+      #                 "style": "primary",
+      #                 "value": "approve"
+      #               },
+      #               {
+      #                 "type": "button",
+      #                 "text": {
+      #                   "type": "plain_text",
+      #                   "text": "Reject"
+      #                 },
+      #                 "style": "danger",
+      #                 "value": "reject"
+      #               }
+      #             ]
+      #           }
+      #         ]
+      #       }
+      #   env:
+      #     SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
