@@ -135,4 +135,5 @@ jobs:
             channel_id: "C0763JX6X6X"
             title: "🚨 Build Error Log"
             file: "error.log"
-            initial_comment: ":x: Build failed. Here's the full error log."           
+            filename: "error.log"
+            initial_comment: ":x: Build failed. Here's the full error log."          
