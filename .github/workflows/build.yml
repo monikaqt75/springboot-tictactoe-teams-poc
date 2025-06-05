@@ -124,3 +124,16 @@ jobs:
                     style: "danger"
                     value: "reject"
                     action_id: "reject_action"
+
+      - name: Upload Error Log File
+        if: failure()
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          method: files.upload
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            channels: "C0763JX6X6X"
+            filename: "error.log"
+            filetype: "text"
+            title: "Build Error Log"
+            initial_comment: ":x: Build failed. Here's the full error log."              
