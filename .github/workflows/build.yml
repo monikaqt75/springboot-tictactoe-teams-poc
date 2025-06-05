@@ -73,7 +73,7 @@ jobs:
         with:
           payload: |
             {
-              "channel": "#ci-cd-updates",
+              "channel": "#github-actions",
               "blocks": [
                 {
                   "type": "section",
