@@ -37,12 +37,12 @@ jobs:
           BUILD_STATUS=$?
 
           echo "::group::Maven Output (tail)"
-          tail -n 50 build_output.log || echo "No output file"
+          tail -n 30 build_output.log || echo "No output file"
           echo "::endgroup::"
 
           if [ $BUILD_STATUS -ne 0 ]; then
             echo "Build failed, capturing logs..."
-            tail -n 50 build_output.log | tr '\n' ' ' | sed 's/"/\\"/g' > error.log
+            tail -n 30 build_output.log | tr '\n' ' ' | sed 's/"/\\"/g' > error.log
             ERROR_MSG=$(cat error.log)
             echo "error_message=$ERROR_MSG" >> "$GITHUB_OUTPUT"
           fi
