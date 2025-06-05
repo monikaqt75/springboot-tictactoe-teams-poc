@@ -45,6 +45,7 @@ jobs:
         shell: bash
 
       - name: Run Tests
+        if: steps.build_app.outcome == 'success'
         run: |
           set -euo pipefail
           mvn test --batch-mode --no-transfer-progress
