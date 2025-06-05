@@ -69,11 +69,43 @@ jobs:
 
       - name: Slack Notification - Build Succeeded
         if: success()
-        uses: slackapi/slack-github-action@v1.26.0
+        uses: slackapi/slack-github-action@v1.24.0
         with:
           payload: |
             {
-              "text": ":white_check_mark: *Maven Build Succeeded* for *${{ github.repository }}* :rocket:\n*Commit:* `${{ github.sha }}`\n*Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "channel": "#ci-cd-updates",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "🚀 New deployment is ready! Would you like to proceed?"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Approve"
+                      },
+                      "style": "primary",
+                      "value": "approve"
+                    },
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Reject"
+                      },
+                      "style": "danger",
+                      "value": "reject"
+                    }
+                  ]
+                }
+              ]
             }
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
