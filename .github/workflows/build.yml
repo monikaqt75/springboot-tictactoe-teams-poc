@@ -54,6 +54,7 @@ jobs:
         shell: bash
 
       - name: Show Error Message Output
+        if: failure()
         run: |
           echo "Captured error log:"
           echo "${{ steps.build_app.outputs.error_message }}"
