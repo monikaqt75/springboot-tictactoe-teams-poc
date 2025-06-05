@@ -31,13 +31,17 @@ jobs:
       - name: Build Application with Maven
         id: build_app
         run: |
-          set -euo pipefail
-          mvn clean package --batch-mode --no-transfer-progress 2> build_error.log || {
-          echo "error_message<<EOF" >> $GITHUB_OUTPUT
-          tail -n 50 build_error.log >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          exit 1
-          }
+          set +e  # Allow script to continue after error
+          mvn clean package --batch-mode --no-transfer-progress 2> build_error.log
+          BUILD_STATUS=$?
+          set -e
+
+          if [ $BUILD_STATUS -ne 0 ]; then
+            echo "error_message<<EOF" >> $GITHUB_OUTPUT
+            tail -n 50 build_error.log >> $GITHUB_OUTPUT
+             echo "EOF" >> $GITHUB_OUTPUT
+             exit $BUILD_STATUS
+          fi
 
       - name: Run Tests
         if: success()  
@@ -60,7 +64,7 @@ jobs:
         with:
           payload: |
             {
-              "text": ":x: Maven Build Failed for *${{ github.repository }}*\n> *Commit*: `${{ github.sha }}` - _${{ github.event.head_commit.message }}_\n> *Author*: ${{ github.actor }}\n> *Run*: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n>*Error Snippet:*```${{ steps.build_app.outputs.error_message }}```",
+              "text": ":x: *Maven Build Failed* for *${{ github.repository }}*\n> *Commit:* `${{ github.sha }}`\n> *Message:* _${{ github.event.head_commit.message }}_\n> *Author:* ${{ github.actor }}\n> *Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n>*Error Log:*```${{ steps.build_app.outputs.error_message || 'No error message found.' }}```",
               "channel": "#build-notifications"
             }
         env:
