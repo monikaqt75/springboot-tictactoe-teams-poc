@@ -31,17 +31,22 @@ jobs:
       - name: Build Application with Maven
         id: build_app
         run: |
-          set +e  # Allow script to continue after error
+          set +e  # Allow script to continue on error
+
           mvn clean package --batch-mode --no-transfer-progress 2> build_error.log
           BUILD_STATUS=$?
-          set -e
 
+          echo "Build exited with status: $BUILD_STATUS"
+
+    
           if [ $BUILD_STATUS -ne 0 ]; then
             echo "error_message<<EOF" >> $GITHUB_OUTPUT
             tail -n 50 build_error.log >> $GITHUB_OUTPUT
-             echo "EOF" >> $GITHUB_OUTPUT
-             exit $BUILD_STATUS
+            echo "EOF" >> $GITHUB_OUTPUT
           fi
+
+          exit $BUILD_STATUS  # Fail the step if Maven failed
+          shell: bash
 
       - name: Run Tests
         if: success()  
