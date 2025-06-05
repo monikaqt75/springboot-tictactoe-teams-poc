@@ -56,74 +56,74 @@ jobs:
           echo "Captured Error Output:"
           echo "${{ steps.build_app.outputs.error_message }}"
 
-      - name: Slack Notification - Build Failed
-        if: failure()
-        uses: slackapi/slack-github-action@v2.1.0
-        with:
-          method: chat.postMessage
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
-          payload: |
-            channel: "C0763JX6X6X"
-            text: ":x: *Maven Build Failed* for *${{ github.repository }}* :boom:"
-            blocks:
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: ":x: *Maven Build Failed* for *${{ github.repository }}* :boom:\n*Commit:* `${{ github.sha }}`\n*Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n*Error Log:*```${{ steps.build_app.outputs.error_message || 'No error log captured.' }}```"
-              - type: "actions"
-                elements:
-                  - type: "button"
-                    text:
-                      type: "plain_text"
-                      text: "Explain"
-                    style: "primary"
-                    value: "explain_error"
-                    action_id: "explain_action"
-                  - type: "button"
-                    text:
-                      type: "plain_text"
-                      text: "Fix"
-                    style: "primary"
-                    value: "fix_error"
-                    action_id: "fix_action"
-                  - type: "button"
-                    text:
-                      type: "plain_text"
-                      text: "Re-run"
-                    style: "danger"
-                    value: "rerun_pipeline"
-                    action_id: "rerun_action"
+      # - name: Slack Notification - Build Failed
+      #   if: failure()
+      #   uses: slackapi/slack-github-action@v2.1.0
+      #   with:
+      #     method: chat.postMessage
+      #     token: ${{ secrets.SLACK_BOT_TOKEN }}
+      #     payload: |
+      #       channel: "C0763JX6X6X"
+      #       text: ":x: *Maven Build Failed* for *${{ github.repository }}* :boom:"
+      #       blocks:
+      #         - type: "section"
+      #           text:
+      #             type: "mrkdwn"
+      #             text: ":x: *Maven Build Failed* for *${{ github.repository }}* :boom:\n*Commit:* `${{ github.sha }}`\n*Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n*Error Log:*```${{ steps.build_app.outputs.error_message || 'No error log captured.' }}```"
+      #         - type: "actions"
+      #           elements:
+      #             - type: "button"
+      #               text:
+      #                 type: "plain_text"
+      #                 text: "Explain"
+      #               style: "primary"
+      #               value: "explain_error"
+      #               action_id: "explain_action"
+      #             - type: "button"
+      #               text:
+      #                 type: "plain_text"
+      #                 text: "Fix"
+      #               style: "primary"
+      #               value: "fix_error"
+      #               action_id: "fix_action"
+      #             - type: "button"
+      #               text:
+      #                 type: "plain_text"
+      #                 text: "Re-run"
+      #               style: "danger"
+      #               value: "rerun_pipeline"
+      #               action_id: "rerun_action"
 
-      - name: Slack Notification - Build Succeeded
-        if: success()
-        uses: slackapi/slack-github-action@v2.1.0
-        with:
-          method: chat.postMessage
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
-          payload: |
-            channel: "C0763JX6X6X"
-            text: "🚀 New deployment is ready! Would you like to proceed?"
-            blocks:
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: "🚀 New deployment is ready! Would you like to proceed?"
-              - type: "actions"
-                elements:
-                  - type: "button"
-                    text:
-                      type: "plain_text"
-                      text: "Approve"
-                    style: "primary"
-                    value: "approve"
-                    action_id: "approve_action"
-                  - type: "button"
-                    text:
-                      type: "plain_text"
-                      text: "Reject"
-                    style: "danger"
-                    value: "reject"
-                    action_id: "reject_action"
+      # - name: Slack Notification - Build Succeeded
+      #   if: success()
+      #   uses: slackapi/slack-github-action@v2.1.0
+      #   with:
+      #     method: chat.postMessage
+      #     token: ${{ secrets.SLACK_BOT_TOKEN }}
+      #     payload: |
+      #       channel: "C0763JX6X6X"
+      #       text: "🚀 New deployment is ready! Would you like to proceed?"
+      #       blocks:
+      #         - type: "section"
+      #           text:
+      #             type: "mrkdwn"
+      #             text: "🚀 New deployment is ready! Would you like to proceed?"
+      #         - type: "actions"
+      #           elements:
+      #             - type: "button"
+      #               text:
+      #                 type: "plain_text"
+      #                 text: "Approve"
+      #               style: "primary"
+      #               value: "approve"
+      #               action_id: "approve_action"
+      #             - type: "button"
+      #               text:
+      #                 type: "plain_text"
+      #                 text: "Reject"
+      #               style: "danger"
+      #               value: "reject"
+      #               action_id: "reject_action"
 
       - name: Upload Error Log File
         if: failure()
