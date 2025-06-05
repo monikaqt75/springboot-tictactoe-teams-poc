@@ -2,18 +2,18 @@ name: Build Pipeline
 
 on:
   workflow_dispatch:
-    inputs:
-      pom_path:
-        description: 'Select the pom.xml file to use'
-        required: true
-        default: './pass/pom.xml'
-        type: choice
-        options:
-          - './pass/pom.xml'
-          - './fail/pom.xml'
-  # push:
-  #   branches:
-  #     - master
+  #   inputs:
+  #     pom_path:
+  #       description: 'Select the pom.xml file to use'
+  #       required: true
+  #       default: './pass/pom.xml'
+  #       type: choice
+  #       options:
+  #         - './pass/pom.xml'
+  #         - './fail/pom.xml'
+  push:
+    branches:
+      - master
 
 permissions:
   contents: read
@@ -42,7 +42,7 @@ jobs:
         run: |
           set +e
           echo "Running mvn clean package..."
-          mvn clean package --file "${{ github.event.inputs.pom_path }}" --batch-mode --no-transfer-progress > build_output.log 2>&1
+          mvn clean package --batch-mode --no-transfer-progress > build_output.log 2>&1
           BUILD_STATUS=$?
 
           echo "::group::Maven Output (tail)"
