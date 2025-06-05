@@ -1,22 +1,111 @@
-name: Slack Notify with Buttons
+name: Build Pipeline
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+env:
+  JAVA_VERSION: '17'
+  JAVA_DISTRIBUTION: 'temurin'
 
 jobs:
-  slack_notify:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Post blocks to a Slack channel
-        uses: slackapi/slack-github-action@v2.1.0
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
-          method: chat.postMessage
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Build Application with Maven (Capture Logs)
+        id: build_app
+        run: |
+          set +e
+          echo "Running mvn clean package..."
+          mvn clean package --batch-mode --no-transfer-progress > build_output.log 2>&1
+          BUILD_STATUS=$?
+
+          echo "::group::Maven Output (tail)"
+          tail -n 50 build_output.log || echo "No output file"
+          echo "::endgroup::"
+
+          if [ $BUILD_STATUS -ne 0 ]; then
+            echo "Build failed, capturing logs..."
+            tail -n 50 build_output.log | tr '\n' ' ' | sed 's/"/\\"/g' > error.log
+            ERROR_MSG=$(cat error.log)
+            echo "error_message=$ERROR_MSG" >> "$GITHUB_OUTPUT"
+          fi
+
+          exit $BUILD_STATUS
+        shell: bash
+
+      - name: Show Error Message Output
+        if: failure()
+        run: |
+          echo "Captured Error Output:"
+          echo "${{ steps.build_app.outputs.error_message }}"
+
+      - name: Slack Notification - Build Failed
+        if: failure()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
           payload: |
-              channel: ${{ secrets.SLACK_CHANNEL_ID }}
-              text: "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
-              blocks:
-                - type: "section"
-                  text:
-                    type: "mrkdwn"
-                    text: "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+            {
+              "text": ":x: *Maven Build Failed* for *${{ github.repository }}* :boom:\n*Commit:* `${{ github.sha }}`\n*Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n*Error Log:*```${{ steps.build_app.outputs.error_message || 'No error log captured.' }}```"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Slack Notification - Build Succeeded
+        if: success()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "channel": "C0763JX6X6X",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "🚀 New deployment is ready! Would you like to proceed?"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Approve"
+                      },
+                      "style": "primary",
+                      "value": "approve"
+                    },
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Reject"
+                      },
+                      "style": "danger",
+                      "value": "reject"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
