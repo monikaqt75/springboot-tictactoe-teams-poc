@@ -129,7 +129,7 @@ jobs:
         if: failure()
         uses: slackapi/slack-github-action@v2.1.0
         with:
-          method: files.upload
+          method: files.uploadV2
           token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
             channels: "C0763JX6X6X"
