@@ -25,16 +25,55 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: maven
 
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
       - name: Build Application with Maven
+        id: build_app
         run: |
           set -euo pipefail
           mvn clean package --batch-mode --no-transfer-progress
         shell: bash
 
+      - name: Run Tests
+        run: |
+          set -euo pipefail
+          mvn test --batch-mode --no-transfer-progress
+        shell: bash
+
       - name: Upload Build Artifact
-        if: ${{ success() }}
+        if: steps.build_app.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: springboot-app
+          name: springboot-app-${{ github.run_number }}
           path: target/*.jar
           retention-days: 2
+
+      - name: Slack Notification - Build Failed
+        if: steps.build_app.outcome == 'failure'
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": ":x: Maven Build Failed for ${{ github.repository }}\nCommit: ${{ github.sha }}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+              "channel": "#build-notifications"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Slack Notification - Build Succeeded
+        if: steps.build_app.outcome == 'success'
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": ":white_check_mark: Maven Build Succeeded for ${{ github.repository }}\nCommit: ${{ github.sha }}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+              "channel": "#build-notifications"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
