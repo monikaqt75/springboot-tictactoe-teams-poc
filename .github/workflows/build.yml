@@ -34,25 +34,29 @@ jobs:
           set +e
           echo "Starting Maven build..."
 
-          mvn clean package --batch-mode --no-transfer-progress 2> build_error.log
-          EXIT_CODE=$?
+          # Run Maven and capture error output
+          mvn clean package --batch-mode --no-transfer-progress 2>build_error.log
+          BUILD_STATUS=$?
 
-          echo "Build exited with status: $EXIT_CODE"
-          
-          # Always print error log for debugging
-          echo "::group::Build Error Log"
-          cat build_error.log || echo "No error log file found"
+          echo "::group::Error Log Preview"
+          cat build_error.log || echo "Log not found"
           echo "::endgroup::"
 
-          # Export error log to GitHub output (if any)
-          if [ $EXIT_CODE -ne 0 ]; then
-            echo "error_message<<EOF" >> $GITHUB_OUTPUT
-            tail -n 50 build_error.log >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+          # Capture last 50 lines into a safe single-line GitHub Actions output
+          if [ $BUILD_STATUS -ne 0 ]; then
+            TAIL_LOG=$(tail -n 50 build_error.log | sed 's/`/\\`/g' | tr '\n' ' ')
+            echo "Captured log snippet:"
+            echo "$TAIL_LOG"
+            echo "error_message=$TAIL_LOG" >> $GITHUB_OUTPUT
           fi
 
-          exit $EXIT_CODE
+          exit $BUILD_STATUS
         shell: bash
+
+      - name: Show Error Message Output
+        run: |
+          echo "Captured error log:"
+          echo "${{ steps.build_app.outputs.error_message }}"
 
       - name: Slack Notification - Build Failed
         if: failure()
@@ -60,8 +64,7 @@ jobs:
         with:
           payload: |
             {
-              "text": ":x: *Maven Build Failed* for *${{ github.repository }}* :bangbang:\n*Commit:* `${{ github.sha }}`\n*Message:* _${{ github.event.head_commit.message }}_\n*Author:* ${{ github.actor }}\n*Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n*Error Log:*```${{ steps.build_app.outputs.error_message || 'No error captured.' }}```",
-              "channel": "#build-notifications"
+              "text": ":x: *Maven Build Failed* for *${{ github.repository }}* :boom:\n*Commit:* `${{ github.sha }}`\n*Author:* ${{ github.actor }}\n*Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n*Error Log:*```${{ steps.build_app.outputs.error_message || 'No error log captured.' }}```"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
@@ -72,7 +75,7 @@ jobs:
         with:
           payload: |
             {
-              "text": ":white_check_mark: *Maven Build Succeeded* for *${{ github.repository }}* :rocket:\n*Commit:* `${{ github.sha }}`\n*Message:* _${{ github.event.head_commit.message }}_\n*Author:* ${{ github.actor }}\n*Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": ":white_check_mark: *Maven Build Succeeded* for *${{ github.repository }}* :rocket:\n*Commit:* `${{ github.sha }}`\n*Author:* ${{ github.actor }}\n*Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
