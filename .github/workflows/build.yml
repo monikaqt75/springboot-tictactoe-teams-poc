@@ -8,8 +8,8 @@ on:
         required: true
         type: choice
         options:
-          - './pass-pom.xml'
-          - './fail-pom.xml'
+          - './pom.xml'
+          - './pom1.xml'
   # push:
   #   branches:
   #     - master
