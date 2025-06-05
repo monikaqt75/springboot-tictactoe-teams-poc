@@ -71,7 +71,7 @@ jobs:
         uses: slackapi/slack-github-action@v1.24.0
         with:
           payload: |
-           {
+            {
               "channel": "C0763JX6X6X",
               "text": "🚀 GitHub Actions workflow ran successfully!"
             }
