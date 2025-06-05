@@ -69,43 +69,29 @@ jobs:
 
       - name: Slack Notification - Build Succeeded
         if: success()
-        uses: slackapi/slack-github-action@v1.24.0
+        uses: slackapi/slack-github-action@v2.1.0
         with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
-            {
-              "channel": "C0763JX6X6X",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "🚀 New deployment is ready! Would you like to proceed?"
-                  }
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "Approve"
-                      },
-                      "style": "primary",
-                      "value": "approve"
-                    },
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "Reject"
-                      },
-                      "style": "danger",
-                      "value": "reject"
-                    }
-                  ]
-                }
-              ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+            channel: "C0763JX6X6X"
+            text: "🚀 New deployment is ready! Would you like to proceed?"
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "🚀 New deployment is ready! Would you like to proceed?"
+              - type: "actions"
+                elements:
+                  - type: "button"
+                    text:
+                      type: "plain_text"
+                      text: "Approve"
+                    style: "primary"
+                    value: "approve"
+                  - type: "button"
+                    text:
+                      type: "plain_text"
+                      text: "Reject"
+                    style: "danger"
+                    value: "reject"
