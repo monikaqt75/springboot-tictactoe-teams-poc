@@ -71,7 +71,7 @@ jobs:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
-            channel: "C0763JX6X6X"
+            channel: "${{ secrets.SLACK_CHANNEL_ID }}"
             text: ":x: *Maven Build Failed* for *${{ github.repository }}* :boom:"
             blocks:
               - type: "section"
@@ -84,7 +84,7 @@ jobs:
                     text:
                       type: "plain_text"
                       text: "Explain"
-                    style: "primary"
+                    # style: "primary"
                     value: "explain_error"
                     action_id: "explain_click"
                   - type: "button"
@@ -109,7 +109,7 @@ jobs:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
-            channel: "C0763JX6X6X"
+            channel: "${{ secrets.SLACK_CHANNEL_ID }}"
             text: "🚀 New deployment is ready! Would you like to proceed?"
             blocks:
               - type: "section"
@@ -140,7 +140,7 @@ jobs:
       #     method: files.uploadV2
       #     token: ${{ secrets.SLACK_BOT_TOKEN }}
       #     payload: |
-      #       channel_id: "C0763JX6X6X"
+      #       channel: "${{ secrets.SLACK_CHANNEL_ID }}"
       #       title: "🚨 Build Error Log"
       #       file: "error.log"
       #       filename: "error.log"
