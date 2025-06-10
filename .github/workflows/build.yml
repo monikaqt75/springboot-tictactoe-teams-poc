@@ -84,7 +84,7 @@ jobs:
                     text:
                       type: "plain_text"
                       text: "Explain"
-                    # style: "primary"
+                    style: "primary"
                     value: "explain_error"
                     action_id: "explain_click"
                   - type: "button"
