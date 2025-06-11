@@ -99,7 +99,7 @@ jobs:
                       type: "plain_text"
                       text: "Re-run"
                     style: "danger"
-                    value: "rerun_pipeline"
+                    value: '{"action":"rerun","repo":"${{ github.repository }}","run_id":"${{ github.run_id }}"}'
                     action_id: "rerun_click"
 
       - name: Slack Notification - Build Succeeded
