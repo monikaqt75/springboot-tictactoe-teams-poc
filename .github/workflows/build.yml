@@ -99,7 +99,7 @@ jobs:
                       type: "plain_text"
                       text: "Re-run"
                     style: "danger"
-                    value: '{"action":"rerun","repo":"${{ github.repository }}","run_id":"${{ github.run_id }}"}'
+                    value: '{"action":"rerun","repo":"devopsRehan/fastapi-slack-handler","run_id":"${{ github.run_id }}"}'
                     action_id: "rerun_click"
 
       - name: Slack Notification - Build Succeeded
