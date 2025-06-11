@@ -59,11 +59,11 @@ jobs:
           exit $BUILD_STATUS
         shell: bash
 
-      - name: Show Error Message Output
-        if: failure()
-        run: |
-          echo "Captured Error Output:"
-          echo "${{ steps.build_app.outputs.error_message }}"
+      # - name: Show Error Message Output
+      #   if: failure()
+      #   run: |
+      #     echo "Captured Error Output:"
+      #     echo "${{ steps.build_app.outputs.error_message }}"
 
       - name: Slack Notification - Build Failed
         if: failure()
@@ -100,39 +100,39 @@ jobs:
                       type: "plain_text"
                       text: "Re-run"
                     style: "danger"
-                    value: '{"run_id": "${{ github.run_id }}"}'
+                    value: "{\"run_id\": \"${{ github.run_id }}\"}"
                     action_id: "rerun_click"
 
-      - name: Slack Notification - Build Succeeded
-        if: success()
-        uses: slackapi/slack-github-action@v2.1.0
-        with:
-          method: chat.postMessage
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
-          payload: |
-            channel: "${{ secrets.SLACK_CHANNEL_ID }}"
-            text: "🚀 New deployment is ready! Would you like to proceed?"
-            blocks:
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: "🚀 New deployment is ready! Would you like to proceed?"
-              - type: "actions"
-                elements:
-                  - type: "button"
-                    text:
-                      type: "plain_text"
-                      text: "Approve"
-                    style: "primary"
-                    value: "approve"
-                    action_id: "approve_action"
-                  - type: "button"
-                    text:
-                      type: "plain_text"
-                      text: "Reject"
-                    style: "danger"
-                    value: "reject"
-                    action_id: "reject_action"
+      # - name: Slack Notification - Build Succeeded
+      #   if: success()
+      #   uses: slackapi/slack-github-action@v2.1.0
+      #   with:
+      #     method: chat.postMessage
+      #     token: ${{ secrets.SLACK_BOT_TOKEN }}
+      #     payload: |
+      #       channel: "${{ secrets.SLACK_CHANNEL_ID }}"
+      #       text: "🚀 New deployment is ready! Would you like to proceed?"
+      #       blocks:
+      #         - type: "section"
+      #           text:
+      #             type: "mrkdwn"
+      #             text: "🚀 New deployment is ready! Would you like to proceed?"
+      #         - type: "actions"
+      #           elements:
+      #             - type: "button"
+      #               text:
+      #                 type: "plain_text"
+      #                 text: "Approve"
+      #               style: "primary"
+      #               value: "approve"
+      #               action_id: "approve_action"
+      #             - type: "button"
+      #               text:
+      #                 type: "plain_text"
+      #                 text: "Reject"
+      #               style: "danger"
+      #               value: "reject"
+      #               action_id: "reject_action"
 
       # - name: Upload Error Log File
       #   if: failure()
