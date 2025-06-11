@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Re-run workflow
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
         run: |
           curl -X POST \
             -H "Accept: application/vnd.github+json" \
