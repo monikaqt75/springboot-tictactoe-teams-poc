@@ -18,7 +18,10 @@ jobs:
 
     steps:
       - name: Re-run workflow
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
         run: |
-          curl -X POST https://api.github.com/repos/devopsRehan/fastapi-slack-handler/actions/runs/15581135012/rerun \
-            -H "Authorization: Bearer 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" \
-            -H "Accept: application/vnd.github+json"
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.inputs.run_id }}/rerun

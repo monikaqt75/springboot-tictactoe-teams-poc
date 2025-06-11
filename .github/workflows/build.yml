@@ -86,14 +86,14 @@ jobs:
                       type: "plain_text"
                       text: "Explain"
                     style: "primary"
-                    value: "explain_error"
+                    value: "${{ steps.build_app.outputs.error_message }}"
                     action_id: "explain_click"
                   - type: "button"
                     text:
                       type: "plain_text"
                       text: "Fix"
                     style: "primary"
-                    value: "fix_error"
+                    value: "${{ steps.build_app.outputs.error_message }}"
                     action_id: "fix_click"
                   - type: "button"
                     text:
