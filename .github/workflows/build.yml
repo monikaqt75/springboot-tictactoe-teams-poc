@@ -44,26 +44,23 @@ jobs:
           echo "Running mvn clean package..."
           mvn clean package --file "${{ github.event.inputs.pom_path }}" --batch-mode --no-transfer-progress > build_output.log 2>&1
           BUILD_STATUS=$?
-
           echo "::group::Maven Output (tail)"
           tail -n 30 build_output.log || echo "No output file"
           echo "::endgroup::"
-
           if [ $BUILD_STATUS -ne 0 ]; then
             echo "Build failed, capturing logs..."
             tail -n 30 build_output.log | tr '\n' ' ' | sed 's/"/\\"/g' > error.log
             ERROR_MSG=$(cat error.log)
             echo "error_message=$ERROR_MSG" >> "$GITHUB_OUTPUT"
           fi
-
           exit $BUILD_STATUS
         shell: bash
 
-      - name: Show Error Message Output
-        if: failure()
-        run: |
-          echo "Captured Error Output:"
-          echo "${{ steps.build_app.outputs.error_message }}"
+      # - name: Show Error Message Output
+      #   if: failure()
+      #   run: |
+      #     echo "Captured Error Output:"
+      #     echo "${{ steps.build_app.outputs.error_message }}"
 
       - name: Slack Notification - Build Failed
         if: failure()
@@ -86,14 +83,14 @@ jobs:
                       type: "plain_text"
                       text: "Explain"
                     style: "primary"
-                    value: "${{ steps.build_app.outputs.error_message }}"
+                    value: "explain_error"
                     action_id: "explain_click"
                   - type: "button"
                     text:
                       type: "plain_text"
                       text: "Fix"
                     style: "primary"
-                    value: "${{ steps.build_app.outputs.error_message }}"
+                    value: "fix_error"
                     action_id: "fix_click"
                   - type: "button"
                     text:
