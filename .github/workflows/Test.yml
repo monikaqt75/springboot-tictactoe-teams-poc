@@ -1,4 +1,4 @@
-name: Re-run a failed workflow with a specific run ID  
+name: Re-run a workflow  
     
 on:
   workflow_dispatch:
