@@ -59,11 +59,11 @@ jobs:
           exit $BUILD_STATUS
         shell: bash
 
-      # - name: Show Error Message Output
-      #   if: failure()
-      #   run: |
-      #     echo "Captured Error Output:"
-      #     echo "${{ steps.build_app.outputs.error_message }}"
+      - name: Show Error Message Output
+        if: failure()
+        run: |
+          echo "Captured Error Output:"
+          echo "${{ steps.build_app.outputs.error_message }}"
 
       - name: Slack Notification - Build Failed
         if: failure()
