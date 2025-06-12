@@ -102,14 +102,14 @@ jobs:
                       type: "plain_text"
                       text: "Explain"
                     style: "primary"
-                    value: "explain_error"
+                    value: "{\"run_id\": \"${{ github.run_id }}\", \"type\": \"explain\"}"
                     action_id: "explain_click"
                   - type: "button"
                     text:
                       type: "plain_text"
                       text: "Fix"
                     style: "primary"
-                    value: "fix_error"
+                    value: "{\"run_id\": \"${{ github.run_id }}\", \"type\": \"fix\"}"
                     action_id: "fix_click"
                   - type: "button"
                     text:
