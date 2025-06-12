@@ -45,11 +45,11 @@ jobs:
           mvn clean package --file "${{ github.event.inputs.pom_path }}" --batch-mode --no-transfer-progress > build_output.log 2>&1
           BUILD_STATUS=$?
           echo "::group::Maven Output (tail)"
-          tail -n 30 build_output.log || echo "No output file"
+          tail -n 90 build_output.log || echo "No output file"
           echo "::endgroup::"
           if [ $BUILD_STATUS -ne 0 ]; then
             echo "Build failed, capturing logs..."
-            tail -n 30 build_output.log | tr '\n' ' ' | sed 's/"/\\"/g' > error.log
+            tail -n 90 build_output.log | tr '\n' ' ' | sed 's/"/\\"/g' > error.log
             ERROR_MSG=$(cat error.log)
             echo "error_message=$ERROR_MSG" >> "$GITHUB_OUTPUT"
           fi
@@ -61,6 +61,19 @@ jobs:
       #   run: |
       #     echo "Captured Error Output:"
       #     echo "${{ steps.build_app.outputs.error_message }}"
+      
+      - name: Upload Error Log File
+        if: failure()
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          method: files.uploadV2
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            channel: "${{ secrets.SLACK_CHANNEL_ID }}"
+            title: "🚨 Build Error Log"
+            file: "error.log"
+            filename: "error.log"
+            initial_comment: ":x: Build failed. Here's the full error log."
 
       - name: Slack Notification - Build Failed
         if: failure()
@@ -70,12 +83,15 @@ jobs:
           token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
             channel: "${{ secrets.SLACK_CHANNEL_ID }}"
-            text: ":x: *Maven Build Failed* for *${{ github.repository }}* :boom:"
+            text: ":x: *Build Failed* for *${{ github.repository }}* :boom:"
             blocks:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: ":x: *Maven Build Failed* for *${{ github.repository }}* :boom:\n*Commit:* `${{ github.sha }}`\n*Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n*Error Log:*```${{ steps.build_app.outputs.error_message || 'No error log captured.' }}```"
+                  text: |
+                    *Repository:* `${{ github.repository }}`
+                    *Branch:* `${{ github.ref_name }}`
+                    *Triggered by:* `${{ github.actor }}`
               - type: "actions"
                 elements:
                   - type: "button"
@@ -129,17 +145,4 @@ jobs:
       #                 text: "Reject"
       #               style: "danger"
       #               value: "reject"
-      #               action_id: "reject_action"
-
-      # - name: Upload Error Log File
-      #   if: failure()
-      #   uses: slackapi/slack-github-action@v2.1.0
-      #   with:
-      #     method: files.uploadV2
-      #     token: ${{ secrets.SLACK_BOT_TOKEN }}
-      #     payload: |
-      #       channel: "${{ secrets.SLACK_CHANNEL_ID }}"
-      #       title: "🚨 Build Error Log"
-      #       file: "error.log"
-      #       filename: "error.log"
-      #       initial_comment: ":x: Build failed. Here's the full error log."
+      #               action_id: "reject_action"      
