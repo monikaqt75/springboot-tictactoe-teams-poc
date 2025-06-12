@@ -75,6 +75,7 @@ jobs:
             initial_comment: ":x: Build failed. Here's the full error log."
 
       - name: Wait for 10 seconds
+        if: failure()
         run: sleep 10      
 
       - name: Slack Notification - Build Failed
