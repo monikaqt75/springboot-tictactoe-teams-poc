@@ -53,6 +53,19 @@ jobs:
         run: |
           echo "Captured Error Output:"
           echo "${{ steps.build_app.outputs.error_message }}" 
+
+      - name: Prepare Error Log for Deployment
+        if: failure()
+        run: |
+          mkdir -p "${{ github.run_number }}"
+          cp error.log "${{ github.run_number }}/error.log"
+
+      - name: Deploy
+        if: failure()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ github.run_number }}
       
       - name: Upload Error Log File
         if: failure()
@@ -95,14 +108,14 @@ jobs:
                       type: "plain_text"
                       text: "Explain"
                     style: "primary"
-                    value: "explain"
+                    value: "${{ github.run_number }}"
                     action_id: "explain_click"
                   - type: "button"
                     text:
                       type: "plain_text"
                       text: "Fix"
                     style: "primary"
-                    value: "fix"
+                    value: "${{ github.run_number }}"
                     action_id: "fix_click"
                   - type: "button"
                     text:
@@ -141,4 +154,4 @@ jobs:
       #                 text: "Reject"
       #               style: "danger"
       #               value: "reject"
-      #               action_id: "reject_action"      
+      #               action_id: "reject_action"
