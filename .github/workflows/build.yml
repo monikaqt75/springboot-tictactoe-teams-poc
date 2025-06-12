@@ -74,9 +74,9 @@ jobs:
             filename: "error.log"
             initial_comment: ":x: Build failed. Here's the full error log."
 
-      - name: Wait for 10 seconds
+      - name: Wait for 5 seconds
         if: failure()
-        run: sleep 10      
+        run: sleep 5      
 
       - name: Slack Notification - Build Failed
         if: failure()
