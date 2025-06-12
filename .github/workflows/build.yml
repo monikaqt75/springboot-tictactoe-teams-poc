@@ -52,14 +52,7 @@ jobs:
         if: failure()
         run: |
           echo "Captured Error Output:"
-          echo "${{ steps.build_app.outputs.error_message }}"
-
-      - name: Ensure error.log exists
-        if: failure()
-        run: |
-          if [ ! -f error.log ]; then
-            echo "No error log generated." > error.log
-          fi    
+          echo "${{ steps.build_app.outputs.error_message }}" 
       
       - name: Upload Error Log File
         if: failure()
@@ -73,12 +66,6 @@ jobs:
             file: "./error.log"
             filename: "error.log"
             initial_comment: ":x: Build failed. Here's the full error log."
-
-      - name: Extract Slack File ID
-        if: failure()
-        id: extract_file_id
-        run: |
-          echo "SLACK_FILE_ID=$(jq -r '.file.id' <<< '${{ steps.upload_error_log.outputs.response }}')" >> $GITHUB_ENV
 
       - name: Wait for 5 seconds
         if: failure()
@@ -108,14 +95,14 @@ jobs:
                       type: "plain_text"
                       text: "Explain"
                     style: "primary"
-                    value: "{\"run_id\": \"${{ github.run_id }}\", \"type\": \"explain\", \"slack_file_id\": \"${{ env.SLACK_FILE_ID }}\"}"
+                    value: "explain"
                     action_id: "explain_click"
                   - type: "button"
                     text:
                       type: "plain_text"
                       text: "Fix"
                     style: "primary"
-                    value: "{\"run_id\": \"${{ github.run_id }}\", \"type\": \"fix\", \"slack_file_id\": \"${{ env.SLACK_FILE_ID }}\"}"
+                    value: "fix"
                     action_id: "fix_click"
                   - type: "button"
                     text:
