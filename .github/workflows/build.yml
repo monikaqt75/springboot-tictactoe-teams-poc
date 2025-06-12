@@ -75,46 +75,46 @@ jobs:
             filename: "error.log"
             initial_comment: ":x: Build failed. Here's the full error log."
 
-      - name: Slack Notification - Build Failed
-        if: failure()
-        uses: slackapi/slack-github-action@v2.1.0
-        with:
-          method: chat.postMessage
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
-          payload: |
-            channel: "${{ secrets.SLACK_CHANNEL_ID }}"
-            text: ":x: *Build Failed* for *${{ github.repository }}* :boom:"
-            blocks:
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: |
-                    *Repository:* `${{ github.repository }}`
-                    *Branch:* `${{ github.ref_name }}`
-                    *Triggered by:* `${{ github.actor }}`
-              - type: "actions"
-                elements:
-                  - type: "button"
-                    text:
-                      type: "plain_text"
-                      text: "Explain"
-                    style: "primary"
-                    value: "explain_error"
-                    action_id: "explain_click"
-                  - type: "button"
-                    text:
-                      type: "plain_text"
-                      text: "Fix"
-                    style: "primary"
-                    value: "fix_error"
-                    action_id: "fix_click"
-                  - type: "button"
-                    text:
-                      type: "plain_text"
-                      text: "Re-run"
-                    style: "danger"
-                    value: "{\"run_id\": \"${{ github.run_id }}\"}"
-                    action_id: "rerun_click"
+      # - name: Slack Notification - Build Failed
+      #   if: failure()
+      #   uses: slackapi/slack-github-action@v2.1.0
+      #   with:
+      #     method: chat.postMessage
+      #     token: ${{ secrets.SLACK_BOT_TOKEN }}
+      #     payload: |
+      #       channel: "${{ secrets.SLACK_CHANNEL_ID }}"
+      #       text: ":x: *Build Failed* for *${{ github.repository }}* :boom:"
+      #       blocks:
+      #         - type: "section"
+      #           text:
+      #             type: "mrkdwn"
+      #             text: |
+      #               *Repository:* `${{ github.repository }}`
+      #               *Branch:* `${{ github.ref_name }}`
+      #               *Triggered by:* `${{ github.actor }}`
+      #         - type: "actions"
+      #           elements:
+      #             - type: "button"
+      #               text:
+      #                 type: "plain_text"
+      #                 text: "Explain"
+      #               style: "primary"
+      #               value: "explain_error"
+      #               action_id: "explain_click"
+      #             - type: "button"
+      #               text:
+      #                 type: "plain_text"
+      #                 text: "Fix"
+      #               style: "primary"
+      #               value: "fix_error"
+      #               action_id: "fix_click"
+      #             - type: "button"
+      #               text:
+      #                 type: "plain_text"
+      #                 text: "Re-run"
+      #               style: "danger"
+      #               value: "{\"run_id\": \"${{ github.run_id }}\"}"
+      #               action_id: "rerun_click"
 
       # - name: Slack Notification - Build Succeeded
       #   if: success()
