@@ -104,20 +104,6 @@ jobs:
                     *Triggered by:* `${{ github.actor }}`
               - type: "actions"
                 elements:
-                  - type: "static_select"
-                    placeholder:
-                      type: "plain_text"
-                      text: "Choose AI Model"
-                    action_id: "choose_ai_model_action"
-                    options:
-                      - text:
-                          type: "plain_text"
-                          text: "Gemini"
-                        value: "gemini_api"
-                      - text:
-                          type: "plain_text"
-                          text: "OpenRouter"
-                        value: "openrouter_api"
                   - type: "button"
                     text:
                       type: "plain_text"
