@@ -126,33 +126,42 @@ jobs:
                     value: "{\"run_id\": \"${{ github.run_id }}\"}"
                     action_id: "rerun_click"
 
-      # - name: Slack Notification - Build Succeeded
-      #   if: success()
-      #   uses: slackapi/slack-github-action@v2.1.0
-      #   with:
-      #     method: chat.postMessage
-      #     token: ${{ secrets.SLACK_BOT_TOKEN }}
-      #     payload: |
-      #       channel: "${{ secrets.SLACK_CHANNEL_ID }}"
-      #       text: "🚀 New deployment is ready! Would you like to proceed?"
-      #       blocks:
-      #         - type: "section"
-      #           text:
-      #             type: "mrkdwn"
-      #             text: "🚀 New deployment is ready! Would you like to proceed?"
-      #         - type: "actions"
-      #           elements:
-      #             - type: "button"
-      #               text:
-      #                 type: "plain_text"
-      #                 text: "Approve"
-      #               style: "primary"
-      #               value: "approve"
-      #               action_id: "approve_action"
-      #             - type: "button"
-      #               text:
-      #                 type: "plain_text"
-      #                 text: "Reject"
-      #               style: "danger"
-      #               value: "reject"
-      #               action_id: "reject_action"
+      - name: Slack Notification - Build Succeeded
+        if: success()
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            channel: "${{ secrets.SLACK_CHANNEL_ID }}"
+            text: "🚀 New deployment is ready! Would you like to proceed?"
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "🚀 New deployment is ready! Would you like to proceed?"
+              - type: "actions"
+                elements:
+                  - type: "button"
+                    text:
+                      type: "plain_text"
+                      text: "Approve"
+                    style: "primary"
+                    value: "approve"
+                    action_id: "approve_action"
+                  - type: "button"
+                    text:
+                      type: "plain_text"
+                      text: "Reject"
+                    style: "danger"
+                    value: "reject"
+                    action_id: "reject_action"
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ needs.build.result == 'success' }}
+    steps:
+      - name: Deploy Application
+        run: echo "Deploying application..."
