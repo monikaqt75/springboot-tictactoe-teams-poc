@@ -57,15 +57,15 @@ jobs:
       - name: Prepare Error Log for Deployment
         if: failure()
         run: |
-          mkdir -p "${{ github.run_number }}"
-          cp error.log "${{ github.run_number }}/error.log"
+          mkdir -p "${{ github.ref_name }}/${{ github.run_number }}"
+          cp error.log "${{ github.ref_name }}/${{ github.run_number }}/error.log"
 
-      - name: Deploy
+      - name: Deploy to gh-pages
         if: failure()
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ github.run_number }}
+          publish_dir: ${{ github.ref_name }}
       
       - name: Upload Error Log File
         if: failure()
