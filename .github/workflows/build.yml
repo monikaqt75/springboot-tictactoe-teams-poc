@@ -108,14 +108,14 @@ jobs:
                       type: "plain_text"
                       text: "Explain"
                     style: "primary"
-                    value: "${{ github.run_number }}"
+                    value: "https://devopsrehan.github.io/springboot-tictactoe/${{ github.run_number }}"
                     action_id: "explain_click"
                   - type: "button"
                     text:
                       type: "plain_text"
                       text: "Fix"
                     style: "primary"
-                    value: "${{ github.run_number }}"
+                    value: "https://devopsrehan.github.io/springboot-tictactoe/${{ github.run_number }}"
                     action_id: "fix_click"
                   - type: "button"
                     text:
