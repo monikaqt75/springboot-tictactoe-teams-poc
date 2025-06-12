@@ -125,6 +125,27 @@ jobs:
                     style: "danger"
                     value: "{\"run_id\": \"${{ github.run_id }}\"}"
                     action_id: "rerun_click"
+                  - type: "static_select"
+                    placeholder:
+                      type: "plain_text"
+                      text: "Choose AI Model"
+                    action_id: "choose_ai_model_action"
+                    options:
+                      - text:
+                          type: "plain_text"
+                          text: "Gemini"
+                        value: "gemini_api"
+                      - text:
+                          type: "plain_text"
+                          text: "OpenRouter"
+                        value: "openrouter_api"
+                  - type: "button"
+                    text:
+                      type: "plain_text"
+                      text: "Retry with AI"
+                    style: "primary"
+                    value: "{\"retry_with_ai\": true}"
+                    action_id: "retry_with_ai_click"
 
       - name: Slack Notification - Build Succeeded
         if: success()
