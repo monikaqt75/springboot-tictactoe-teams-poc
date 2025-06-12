@@ -68,9 +68,9 @@ jobs:
           method: files.uploadV2
           token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
-            channel: "${{ secrets.SLACK_CHANNEL_ID }}"
+            channel_id: ${{ secrets.SLACK_CHANNEL_ID }}
             title: "🚨 Build Error Log"
-            file: "error.log"
+            file: "./error.log"
             filename: "error.log"
             initial_comment: ":x: Build failed. Here's the full error log."
 
