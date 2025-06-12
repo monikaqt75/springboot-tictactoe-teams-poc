@@ -1,19 +1,11 @@
 name: Build Pipeline
-# run-name: Run ID - ${{ github.run_id }}
 
 on:
   workflow_dispatch:
-    inputs:
-      pom_path:
-        description: 'Select the pom.xml file to use'
-        required: true
-        type: choice
-        options:
-          - './pom.xml'
-          - './pom1.xml'
-  # push:
-  #   branches:
-  #     - master
+    
+  push:
+    branches:
+      - master
 
 permissions:
   contents: read
@@ -42,7 +34,7 @@ jobs:
         run: |
           set +e
           echo "Running mvn clean package..."
-          mvn clean package --file "${{ github.event.inputs.pom_path }}" --batch-mode --no-transfer-progress > build_output.log 2>&1
+          mvn clean package --batch-mode --no-transfer-progress > build_output.log 2>&1
           BUILD_STATUS=$?
           echo "::group::Maven Output (tail)"
           tail -n 50 build_output.log || echo "No output file"
@@ -61,12 +53,18 @@ jobs:
         run: |
           echo "Captured Error Output:"
           echo "${{ steps.build_app.outputs.error_message }}"
+
+      - name: Ensure error.log exists
+        if: failure()
+        run: |
+          if [ ! -f error.log ]; then
+            echo "No error log generated." > error.log
+          fi    
       
       - name: Upload Error Log File
         if: failure()
         uses: slackapi/slack-github-action@v2.1.0
         with:
-          method: files.uploadV2
           token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
             channel: "${{ secrets.SLACK_CHANNEL_ID }}"
