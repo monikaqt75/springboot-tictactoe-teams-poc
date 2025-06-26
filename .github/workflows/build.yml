@@ -18,12 +18,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Ping FastAPI URL
-        run: |
-          echo "Pinging FastAPI Handler..."
-          curl --silent https://fastapi-slack-handler.onrender.com || true
-          
+    steps:          
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -162,6 +157,14 @@ jobs:
                     value: "reject"
                     action_id: "reject_action"
 
+  Ping_FastAPI:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping FastAPI URL
+        run: |
+          echo "Pinging FastAPI Handler..."
+          curl --silent https://fastapi-slack-handler.onrender.com || true 
+
   # deploy:
   #   name: Deploy
   #   needs: build
@@ -169,4 +172,4 @@ jobs:
   #   if: ${{ needs.build.result == 'success' }}
   #   steps:
   #     - name: Deploy Application
-  #       run: echo "Deploying application..."
+  #       run: echo "Deploying application..."      
