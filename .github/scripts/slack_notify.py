@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import json
+import time
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
@@ -28,6 +29,9 @@ def main():
     except SlackApiError as e:
         print(f"Failed to upload file: {e.response['error']}")
         file_id = None
+
+    # Wait for a moment to ensure the file is uploaded
+    time.sleep(2)
 
     # 2) Post a message with buttons
     try:
