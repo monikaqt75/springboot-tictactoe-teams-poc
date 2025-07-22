@@ -17,7 +17,7 @@ def main():
 
     # 1) Upload the error.log file
     try:
-        upload_resp = client.files_uploadV2(
+        upload_resp = client.files_upload_v2(
             channel=channel,
             file="error.log",
             title="🚨 Build Error Log",
