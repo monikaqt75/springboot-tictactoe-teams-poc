@@ -66,11 +66,25 @@ def main():
     elif not gemini_api_key:
         ai_msg = "⚠️ GEMINI_API_KEY not set. Cannot provide AI explanation."
 
-    # Wait for a moment to ensure the file is uploaded
-    time.sleep(2)    
-
     # 3) Post the message with Fix and Re-run buttons only
     blocks = [
+        # 1. Error log file info (if uploaded)
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": ":x: Build failed. Here's the full error log (see attachment above)." if file_id else ":x: Build failed. Error log not uploaded."
+            }
+        },
+        # 2. AI explanation
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": ai_msg
+            }
+        },
+        # 3. Info (repo, branch, actor)
         {
             "type": "section",
             "text": {
@@ -82,13 +96,7 @@ def main():
                 )
             }
         },
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": ai_msg
-            }
-        },
+        # 4. Buttons
         {
             "type": "actions",
             "elements": [
