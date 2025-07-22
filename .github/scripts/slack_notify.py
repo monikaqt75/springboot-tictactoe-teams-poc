@@ -52,9 +52,6 @@ def main():
         print(f"Failed to upload file: {e.response['error']}")
         file_id = None
 
-    # Wait for a moment to ensure the file is uploaded
-    time.sleep(1)
-
     # 2) Automatically post AI explanation
     try:
         with open("error.log", "r", encoding="utf-8") as f:
@@ -70,7 +67,7 @@ def main():
         ai_msg = "⚠️ GEMINI_API_KEY not set. Cannot provide AI explanation."
 
     # Wait for a moment to ensure the file is uploaded
-    time.sleep(1)    
+    time.sleep(2)    
 
     # 3) Post the message with Fix and Re-run buttons only
     blocks = [
