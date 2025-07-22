@@ -78,6 +78,10 @@ jobs:
         if: failure()
         run: pip install slack-sdk
 
+      - name: Install Requests
+        if: failure()
+        run: pip install requests
+
       - name: Run Slack Notifier
         if: failure()
         env:
@@ -97,4 +101,4 @@ jobs:
       - name: Ping FastAPI URL
         run: |
           echo "Pinging FastAPI Handler..."
-          curl --silent https://fastapi-slack-handler.onrender.com || true  
+          curl --silent https://fastapi-slack-handler.onrender.com || true
