@@ -49,14 +49,7 @@ def main():
             },
             {
                 "type": "actions",
-                "elements": [
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "Explain"},
-                        "style": "primary",
-                        "value": f"https://devopsrehan.github.io/springboot-tictactoe/{run_number}",
-                        "action_id": "explain_click"
-                    },
+                "elements": [                   
                     {
                         "type": "button",
                         "text": {"type": "plain_text", "text": "Fix"},
