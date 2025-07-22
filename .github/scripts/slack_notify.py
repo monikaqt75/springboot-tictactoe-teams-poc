@@ -54,13 +54,15 @@ def main():
                         "type": "button",
                         "text": {"type": "plain_text", "text": "Explain"},
                         "style": "primary",
-                        "url": f"https://devopsrehan.github.io/springboot-tictactoe/{run_number}",
+                        "value": f"https://devopsrehan.github.io/springboot-tictactoe/{run_number}",
+                        "action_id": "explain_click"
                     },
                     {
                         "type": "button",
                         "text": {"type": "plain_text", "text": "Fix"},
                         "style": "primary",
-                        "url": f"https://devopsrehan.github.io/springboot-tictactoe/{run_number}",
+                        "value": f"https://devopsrehan.github.io/springboot-tictactoe/{run_number}",
+                        "action_id": "fix_click"
                     },
                     {
                         "type": "button",
