@@ -5,7 +5,7 @@ from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
 def main():
-    # Load environment
+    # 1) Load environment variables
     token      = os.environ["SLACK_BOT_TOKEN"]
     channel    = os.environ["SLACK_CHANNEL"]
     repo       = os.environ["REPO"]
@@ -16,7 +16,7 @@ def main():
 
     client = WebClient(token=token)
 
-    # 1) Upload the error.log file (no initial_comment)
+    # 2) Upload error.log (no initial_comment)
     try:
         upload_resp = client.files_upload_v2(
             channel=channel,
@@ -29,12 +29,11 @@ def main():
         print(f"⚠️ Failed to upload file: {e.response['error']}")
         return
 
-    # 2) Prepare blocks: file first, then info and buttons
+    # 3) Build your blocks
     file_block = {
         "type": "file",
         "block_id": "error_log",
-        "external_id": file_id,
-        "source": "remote"
+        "file_id": file_id
     }
 
     info_block = {
@@ -74,7 +73,7 @@ def main():
         ]
     }
 
-    # 3) Post the combined message
+    # 4) Send a single chat_postMessage
     try:
         client.chat_postMessage(
             channel=channel,
