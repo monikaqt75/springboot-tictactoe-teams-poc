@@ -87,6 +87,10 @@ jobs:
 
       - name: Run Pipeline Details Script
         if: failure()
+        env:
+          GITHUB_TOKEN: ${{ github.TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
         run: python .github/scripts/PipelineDetails.py --fetch-logs
 
       # - name: Run Slack Notifier
