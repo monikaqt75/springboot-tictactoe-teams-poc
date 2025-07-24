@@ -89,7 +89,7 @@ jobs:
       - name: Run Pipeline Details Script
         if: failure()
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.run_id }}
         run: python .github/scripts/PipelineDetails.py --fetch-logs
