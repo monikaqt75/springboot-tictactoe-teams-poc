@@ -1,65 +1,63 @@
 #!/usr/bin/env python3
-import os
-import re
 import subprocess
+import re
 import sys
+import os
 from urllib.parse import urlparse
-
-# These tokens appear in *every* CI/CD platform’s env‑var names:
-CI_KEYWORDS = (
-    "CI", "ACTION", "BUILD", "PIPELINE", "WORKFLOW", "JOB", "TASK", "DRONE",
-    "RUNNER", "GITHUB", "GITLAB", "JENKINS", "TRAVIS", "CIRCLE", "TF_BUILD",
-    "TEAMCITY", "BITBUCKET", "BUDDY", "APPVEYOR"
-)
 
 def get_first_remote_url() -> str:
     remotes = subprocess.check_output(["git", "remote"], text=True).splitlines()
     if not remotes:
         raise RuntimeError("No git remotes found")
+    remote = remotes[0].strip()
     return subprocess.check_output(
-        ["git", "remote", "get-url", remotes[0].strip()],
+        ["git", "remote", "get-url", remote],
         text=True
     ).strip()
 
 def extract_hostname(url: str) -> str:
-    if url.startswith(("git@", "ssh://")):
-        return re.match(r"(?:.*@)?([^:/]+)", url).group(1)
+    if url.startswith("git@") or url.startswith("ssh://"):
+        match = re.match(r"(?:.*@)?([^:/]+)", url)
+        return match.group(1)
     parsed = urlparse(url)
     return parsed.hostname or ""
 
 def infer_server_name(host: str) -> str:
     parts = host.split(".")
-    return parts[-2].replace("-", " ").title() if len(parts) >= 2 else host.title()
+    if len(parts) >= 2:
+        return parts[-2].replace("-", " ").replace("_", " ").title()
+    return host.title()
 
-def detect_ci_tool_name() -> str:
-    # 1) Find all env‑vars that contain any CI_KEYWORD and are non‑empty
-    candidates = [
-        k for k,v in os.environ.items()
-        if k.isupper() and v and any(tok in k for tok in CI_KEYWORDS)
-    ]
-    if not candidates:
-        return "Local / Unknown"
-
-    # 2) Prefer boolean flags ("true"/"1") over IDs or URLs
-    bool_flags = [k for k in candidates if os.environ[k].strip().lower() in ("true","1")]
-    pick_list = bool_flags or candidates
-
-    # 3) From pick_list, choose the *longest* name (most specific)
-    tool_var = max(pick_list, key=len)
-
-    # 4) Pretty‑print: underscores→spaces, title‑case
-    return tool_var.replace("_", " ").title()
+def detect_ci_tool() -> str:
+    # Use the presence of CI-specific env vars
+    ci_vars = {
+        "GitHub Actions": "GITHUB_ACTIONS",
+        "GitLab CI": "GITLAB_CI",
+        "Jenkins": "JENKINS_HOME",
+        "Azure Pipelines": "TF_BUILD",
+        "Bitbucket Pipelines": "BITBUCKET_BUILD_NUMBER",
+        "CircleCI": "CIRCLECI",
+        "Travis CI": "TRAVIS",
+        "TeamCity": "TEAMCITY_VERSION",
+        "Drone CI": "DRONE",
+        "Buddy": "BUDDY",
+    }
+    for name, env_var in ci_vars.items():
+        if os.getenv(env_var):
+            return name
+    return "Unknown / Local"
 
 if __name__ == "__main__":
     try:
-        url    = get_first_remote_url()
-        host   = extract_hostname(url)
+        url = get_first_remote_url()
+        host = extract_hostname(url)
         server = infer_server_name(host)
-        ci_tool = detect_ci_tool_name()
+        ci_tool = detect_ci_tool()
 
         print(f"Remote URL : {url}")
         print(f"Git Server : {server}")
         print(f"CI/CD Tool : {ci_tool}")
+
     except Exception as e:
         sys.stderr.write(f"ERROR: {e}\n")
         sys.exit(1)
