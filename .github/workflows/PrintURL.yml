@@ -1,0 +1,26 @@
+name: URL Notifier
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:          
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        if: failure()
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Print Repository URL 
+        run: python .github/scripts/repo_url.py

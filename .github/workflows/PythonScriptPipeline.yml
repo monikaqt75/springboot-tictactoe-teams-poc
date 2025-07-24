@@ -3,9 +3,9 @@ name: Python Script Pipeline
 on:
   workflow_dispatch:
     
-  push:
-    branches:
-      - master
+  # push:
+  #   branches:
+  #     - master
 
 permissions:
   contents: write
