@@ -49,7 +49,7 @@ if __name__ == "__main__":
         host = extract_hostname(url)
         server = infer_server_name(host)
         print(f"Remote URL: {url}")
-        print(f"Server:     {server}")
+        print(f"Server: {server}")
     except Exception as e:
         sys.stderr.write(f"ERROR: {e}\n")
         sys.exit(1)
