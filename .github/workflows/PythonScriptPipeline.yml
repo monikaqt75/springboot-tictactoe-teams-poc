@@ -85,9 +85,9 @@ jobs:
         if: failure()
         run: pip install requests
 
-      - name: Run Slack Notifier
+      - name: Run Pipeline Details Script
         if: failure()
-        run: python .github/scripts/PipelineDetails.py
+        run: python .github/scripts/PipelineDetails.py --fetch-logs
 
       # - name: Run Slack Notifier
       #   if: failure()
