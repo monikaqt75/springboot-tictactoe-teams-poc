@@ -94,7 +94,7 @@ def main():
             "elements": [
                 {
                     "type": "button",
-                    "text": {"type": "plain_text", "text": "Fix"},
+                    "text": {"type": "plain_text", "text": "Suggestion Fix"},
                     "style": "primary",
                     "value": f"https://devopsrehan.github.io/springboot-tictactoe/{run_number}",
                     "action_id": "fix_click"
