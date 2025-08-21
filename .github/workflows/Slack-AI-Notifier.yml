@@ -1,11 +1,11 @@
-name: Python Script Pipeline
+name: Slack-AI-Notifier
 
 on:
   workflow_dispatch:
     
-  # push:
-  #   branches:
-  #     - master
+  push:
+    branches:
+      - master
 
 permissions:
   contents: write
