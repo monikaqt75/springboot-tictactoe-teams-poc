@@ -86,13 +86,13 @@ jobs:
         if: failure()
         run: pip install requests
 
-      - name: Run Pipeline Details Script
-        if: failure()
-        env:
-          GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-        run: python .github/scripts/PipelineDetails.py --fetch-logs
+      # - name: Run Pipeline Details Script
+      #   if: failure()
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
+      #     GITHUB_REPOSITORY: ${{ github.repository }}
+      #     GITHUB_RUN_ID: ${{ github.run_id }}
+      #   run: python .github/scripts/PipelineDetails.py --fetch-logs
 
       - name: Run Slack Notifier 
         if: failure()
@@ -105,7 +105,7 @@ jobs:
           RUN_ID: ${{ github.run_id }}
           RUN_NUMBER: ${{ github.run_number }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python .github/scripts/slack_notify.py PipelineDetails
+        run: python .github/scripts/slack_notify.py
 
 
   Ping_FastAPI:
