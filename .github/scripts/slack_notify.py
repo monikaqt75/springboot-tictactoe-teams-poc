@@ -12,7 +12,7 @@ def get_ai_explanation(log_content, gemini_api_key):
         f"{log_content}\n\n"
         "Please explain only the error."
     )
-    gemini_url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key{gemini_api_key}"
+    gemini_url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={gemini_api_key}"
     payload = {
         "contents": [
             {"parts": [{"text": prompt}]}
