@@ -1,0 +1,73 @@
+name: Teams-AI-Notifier
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+  actions: read
+
+env:
+  JAVA_VERSION: '17'
+  JAVA_DISTRIBUTION: 'temurin'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:          
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Build Application with Maven
+        id: build_app
+        run: |
+          set +e
+          mvn clean package --batch-mode --no-transfer-progress > build_output.log 2>&1
+          BUILD_STATUS=$?
+          tail -n 50 build_output.log
+          if [ $BUILD_STATUS -ne 0 ]; then
+            tail -n 50 build_output.log | tr '\n' ' ' | sed 's/"/\\"/g' > error.log
+            ERROR_MSG=$(cat error.log)
+            echo "error_message=$ERROR_MSG" >> "$GITHUB_OUTPUT"
+          fi
+          exit $BUILD_STATUS
+        shell: bash
+
+      - name: Prepare Error Log
+        if: failure()
+        run: |
+          mkdir -p "${{ github.ref_name }}/${{ github.run_number }}"
+          cp error.log "${{ github.ref_name }}/${{ github.run_number }}/error.log"
+
+      - name: Deploy to gh-pages
+        if: failure()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ github.ref_name }}
+          keep_files: true
+
+      - name: Notify MS Teams
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+            -d '{"text":"Build Failed in ${{ github.repository }} - Branch: ${{ github.ref_name }} - Triggered by: ${{ github.actor }} - Run: ${{ github.run_number }} - https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
+            "${{ secrets.TEAMS_WEBHOOK_URL }}"
+
+  ping_fastapi:
+    runs-on: ubuntu-latest
+    needs: build
+    if: always()
+    steps:
+      - name: Ping FastAPI
+        run: curl --silent https://fastapi-slack-handler.onrender.com || true
