@@ -21,7 +21,7 @@ def get_ai_explanation(log_content, gemini_api_key):
         ai_text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
         return ai_text
     except Exception as e:
-        return f"⚠️ AI explanation failed: {str(e)}"
+        return f"AI explanation failed: {str(e)}"
 
 def send_teams_message(webhook_url, message_text):
     payload = {"text": message_text}
@@ -49,26 +49,26 @@ def main():
         log_content = None
         print(f"Could not read error.log: {str(e)}")
 
-    ai_msg = "⚠️ Could not read error.log for AI explanation."
+    ai_msg = "Could not read error.log for AI explanation."
     if log_content and gemini_api_key:
         ai_text = get_ai_explanation(log_content, gemini_api_key)
-        ai_msg = f"💡 AI Explanation:\n\n{ai_text}"
+        ai_msg = f"AI Explanation:\n\n{ai_text}"
     elif not gemini_api_key:
-        ai_msg = "⚠️ GEMINI_API_KEY not set. Cannot provide AI explanation."
+        ai_msg = "GEMINI_API_KEY not set. Cannot provide AI explanation."
 
     error_log_url = f"https://devopsrehan.github.io/springboot-tictactoe/{branch}/{run_number}/error.log"
     workflow_url = f"https://github.com/{repo}/actions/runs/{run_id}"
 
-    message = f"""❌ Build Failed
+    message = f"""Build Failed
 
 {ai_msg}
 
 Repository: {repo}
 Branch: {branch}
 Triggered by: {actor}
-Run Number: #{run_number}
+Run Number: {run_number}
 
-📋 View Details:
+View Details:
 - Workflow Run: {workflow_url}
 - Error Log: {error_log_url}
 
