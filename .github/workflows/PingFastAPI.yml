@@ -13,3 +13,10 @@ jobs:
         run: |
           echo "Pinging FastAPI Handler..."
           curl --silent https://fastapi-slack-handler.onrender.com || true
+  ping_teams:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Teams FastAPI Handler
+        run: |
+          echo "Pinging Teams FastAPI Handler..."
+          curl --silent https://fastapi-teams-handler.onrender.com || true 
