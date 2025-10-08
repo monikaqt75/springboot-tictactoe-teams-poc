@@ -28,14 +28,18 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: maven
 
-      - name: Build Application with Maven
+      - name: Build Application with Maven (Capture Logs)
         id: build_app
         run: |
           set +e
+          echo "Running mvn clean package..."
           mvn clean package --batch-mode --no-transfer-progress > build_output.log 2>&1
           BUILD_STATUS=$?
-          tail -n 50 build_output.log
+          echo "::group::Maven Output (tail)"
+          tail -n 50 build_output.log || echo "No output file"
+          echo "::endgroup::"
           if [ $BUILD_STATUS -ne 0 ]; then
+            echo "Build failed, capturing logs..."
             tail -n 50 build_output.log | tr '\n' ' ' | sed 's/"/\\"/g' > error.log
             ERROR_MSG=$(cat error.log)
             echo "error_message=$ERROR_MSG" >> "$GITHUB_OUTPUT"
@@ -43,7 +47,13 @@ jobs:
           exit $BUILD_STATUS
         shell: bash
 
-      - name: Prepare Error Log
+      - name: Show Error Message Output
+        if: failure()
+        run: |
+          echo "Captured Error Output:"
+          echo "${{ steps.build_app.outputs.error_message }}"
+
+      - name: Prepare Error Log for Deployment
         if: failure()
         run: |
           mkdir -p "${{ github.ref_name }}/${{ github.run_number }}"
@@ -57,17 +67,32 @@ jobs:
           publish_dir: ${{ github.ref_name }}
           keep_files: true
 
-      - name: Notify MS Teams
+      - name: Set up Python
         if: failure()
-        run: |
-          curl -H "Content-Type: application/json" \
-            -d '{"text":"Build Failed in ${{ github.repository }} - Branch: ${{ github.ref_name }} - Triggered by: ${{ github.actor }} - Run: ${{ github.run_number }} - https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
-            "${{ secrets.TEAMS_WEBHOOK_URL }}"
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
-  ping_fastapi:
+      - name: Install Requests
+        if: failure()
+        run: pip install requests
+
+      - name: Run Teams Notifier
+        if: failure()
+        env:
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python .github/scripts/teams_notify.py
+
+  Ping_FastAPI:
     runs-on: ubuntu-latest
-    needs: build
-    if: always()
     steps:
-      - name: Ping FastAPI
-        run: curl --silent https://fastapi-slack-handler.onrender.com || true
+      - name: Ping Teams FastAPI Handler
+        run: |
+          echo "Pinging Teams FastAPI Handler..."
+          curl --silent https://fastapi-teams-handler.onrender.com || true
