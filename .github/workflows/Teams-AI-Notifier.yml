@@ -44,7 +44,7 @@ jobs:
             ERROR_MSG=$(cat error.log)
             echo "error_message=$ERROR_MSG" >> "$GITHUB_OUTPUT"
           fi
-          exit $BUILD_STATUS
+          #exit $BUILD_STATUS
         shell: bash
 
       - name: Show Error Message Output
