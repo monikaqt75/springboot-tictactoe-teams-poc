@@ -79,7 +79,7 @@ def main():
         print(f"DEBUG: GEMINI_API_KEY not set")
         ai_msg = "GEMINI_API_KEY not set. Cannot provide AI explanation."
 
-    error_log_url = f"https://devopsrehan.github.io/springboot-tictactoe/{branch}/{run_number}/error.log"
+    error_log_url = f"https://monikaqt75.github.io/springboot-tictactoe-teams-poc/{branch}/{run_number}/error.log"
     workflow_url = f"https://github.com/{repo}/actions/runs/{run_id}"
 
     adaptive_card = {
