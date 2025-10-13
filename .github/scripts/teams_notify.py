@@ -31,10 +31,10 @@ def get_ai_explanation(log_content, gemini_api_key):
 def send_teams_message(webhook_url, adaptive_card):
     print(f"DEBUG: Sending Teams message...")
     print(f"DEBUG: Webhook URL: {webhook_url[:50]}...")
-    payload = {"body": [adaptive_card]}
+    
     try:
-        print(f"DEBUG: Payload prepared")
-        resp = requests.post(webhook_url, headers={"Content-Type": "application/json"}, json=payload, timeout=10)
+        print(f"DEBUG: Sending Adaptive Card")
+        resp = requests.post(webhook_url, headers={"Content-Type": "application/json"}, json=adaptive_card, timeout=10)
         print(f"DEBUG: Teams response status: {resp.status_code}")
         print(f"DEBUG: Teams response: {resp.text}")
         resp.raise_for_status()
