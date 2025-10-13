@@ -28,14 +28,15 @@ def get_ai_explanation(log_content, gemini_api_key):
         print(f"DEBUG: Gemini API error: {str(e)}")
         return f"AI explanation failed: {str(e)}"
 
-def send_teams_message(webhook_url, message_text):
+def send_teams_message(webhook_url, adaptive_card):
     print(f"DEBUG: Sending Teams message...")
     print(f"DEBUG: Webhook URL: {webhook_url[:50]}...")
-    payload = {"text": message_text}
+    payload = {"body": [adaptive_card]}
     try:
-        print(f"DEBUG: Message length: {len(message_text)}")
+        print(f"DEBUG: Payload prepared")
         resp = requests.post(webhook_url, headers={"Content-Type": "application/json"}, json=payload, timeout=10)
         print(f"DEBUG: Teams response status: {resp.status_code}")
+        print(f"DEBUG: Teams response: {resp.text}")
         resp.raise_for_status()
         print(f"DEBUG: Teams message sent successfully!")
         return True
@@ -73,7 +74,7 @@ def main():
     if log_content and gemini_api_key:
         print(f"DEBUG: Getting AI explanation...")
         ai_text = get_ai_explanation(log_content, gemini_api_key)
-        ai_msg = f"AI Explanation:\n\n{ai_text}"
+        ai_msg = f"{ai_text}"
     elif not gemini_api_key:
         print(f"DEBUG: GEMINI_API_KEY not set")
         ai_msg = "GEMINI_API_KEY not set. Cannot provide AI explanation."
@@ -81,23 +82,71 @@ def main():
     error_log_url = f"https://devopsrehan.github.io/springboot-tictactoe/{branch}/{run_number}/error.log"
     workflow_url = f"https://github.com/{repo}/actions/runs/{run_id}"
 
-    message = f"""Build Failed
+    adaptive_card = {
+        "type": "AdaptiveCard",
+        "body": [
+            {
+                "type": "TextBlock",
+                "text": "Build Failed",
+                "weight": "bolder",
+                "size": "large",
+                "color": "attention"
+            },
+            {
+                "type": "TextBlock",
+                "text": f"Repository: {repo}",
+                "wrap": True
+            },
+            {
+                "type": "TextBlock",
+                "text": f"Branch: {branch}",
+                "wrap": True
+            },
+            {
+                "type": "TextBlock",
+                "text": f"Triggered by: {actor}",
+                "wrap": True
+            },
+            {
+                "type": "TextBlock",
+                "text": f"Run Number: {run_number}",
+                "wrap": True
+            },
+            {
+                "type": "TextBlock",
+                "text": "AI Explanation:",
+                "weight": "bolder",
+                "spacing": "medium"
+            },
+            {
+                "type": "TextBlock",
+                "text": ai_msg,
+                "wrap": True,
+                "style": "emphasis"
+            },
+            {
+                "type": "TextBlock",
+                "text": "View Details:",
+                "weight": "bolder",
+                "spacing": "medium"
+            },
+            {
+                "type": "TextBlock",
+                "text": f"[Workflow Run]({workflow_url})",
+                "wrap": True
+            },
+            {
+                "type": "TextBlock",
+                "text": f"[Error Log]({error_log_url})",
+                "wrap": True
+            }
+        ],
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "version": "1.4"
+    }
 
-{ai_msg}
-
-Repository: {repo}
-Branch: {branch}
-Triggered by: {actor}
-Run Number: {run_number}
-
-View Details:
-- Workflow Run: {workflow_url}
-- Error Log: {error_log_url}
-
-Action Required: Review logs and fix the issue."""
-
-    print(f"DEBUG: Message prepared, sending to Teams...")
-    send_teams_message(webhook_url, message)
+    print(f"DEBUG: Adaptive card prepared")
+    send_teams_message(webhook_url, adaptive_card)
     print(f"DEBUG: Script completed")
 
 if __name__ == "__main__":
