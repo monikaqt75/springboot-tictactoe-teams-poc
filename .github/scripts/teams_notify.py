@@ -25,8 +25,8 @@ def get_ai_explanation(log_content, gemini_api_key):
         print(f"DEBUG: Got AI text: {ai_text[:100]}...")
         return ai_text
     except Exception as e:
-        print(f"DEBUG: Gemini API error: {str(e)}")
-        return f"AI explanation failed: {str(e)}"
+        print(f"DEBUG: Gemini API error occurred")
+        return f"AI explanation failed: Unable to connect to AI service"
 
 def send_teams_message(webhook_url, adaptive_card):
     print(f"DEBUG: Sending Teams message...")
