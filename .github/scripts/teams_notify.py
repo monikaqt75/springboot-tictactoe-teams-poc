@@ -4,7 +4,7 @@ import json
 import requests
 
 def get_ai_explanation(log_content, gemini_api_key):
-    prompt = f"You're an expert in CI/CD/CT and DevOps. Please explain the error in the following log: \n\n{log_content}\n\nPlease explain only the error."
+    prompt = f"You are an expert DevOps engineer. Please analyze this build failure log and provide a clear, professional explanation of what went wrong. Be concise and helpful.\n\nLog:\n{log_content}\n\nProvide only the error explanation in a professional tone."
     gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gemini_api_key}"
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
     try:
