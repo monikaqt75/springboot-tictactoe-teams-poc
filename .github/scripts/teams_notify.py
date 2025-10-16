@@ -1,149 +1,171 @@
+#!/usr/bin/env python3
 import os
+import json
 import requests
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
 
-app = FastAPI()
-
-# Environment variables
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-TEAMS_WEBHOOK_URL = os.environ.get("TEAMS_WEBHOOK_URL")
-GITHUB_TOKEN = os.environ.get("GITHUB_PAT")  # For rerun
-
-# Function to get AI explanation from Gemini
-def get_ai_explanation(log_content):
-    if not GEMINI_API_KEY or not log_content:
-        return "AI explanation not available due to missing API key or log content."
-
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
-    headers = {"Content-Type": "application/json"}
+def get_ai_explanation(log_content, gemini_api_key):
+    print(f"DEBUG: Calling Gemini API...")
+    prompt = (
+        "You're an expert in CI/CD/CT and DevOps. Please explain the error in the following log: \n\n"
+        f"{log_content}\n\n"
+        "Please explain only the error in a concise way."
+    )
+    gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_api_key}"
     payload = {
         "contents": [
-            {
-                "parts": [
-                    {
-                        "text": f"Explain the following build error log:\n{log_content}"
-                    }
-                ]
-            }
+            {"parts": [{"text": prompt}]}
         ]
     }
-
     try:
-        response = requests.post(f"{url}?key={GEMINI_API_KEY}", headers=headers, json=payload)
-        response.raise_for_status()
-        candidates = response.json().get("candidates", [])
-        if candidates:
-            parts = candidates[0].get("content", [])
-            if parts:
-                return parts[0].get("text", "No explanation found.")
-        return "No valid AI explanation received."
+        resp = requests.post(gemini_url, headers={"Content-Type": "application/json"}, json=payload, timeout=30)
+        print(f"DEBUG: Gemini response status: {resp.status_code}")
+        resp.raise_for_status()
+        ai_text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+        print(f"DEBUG: Got AI explanation")
+        return ai_text
     except Exception as e:
-        print(f"Gemini API error: {e}")
+        print(f"DEBUG: Gemini API error occurred")
         return "Unable to get AI explanation at this time."
 
-# Endpoint to send notification to Teams
-@app.post("/notify")
-async def notify_teams(request: Request):
-    data = await request.json()
+def send_teams_message(webhook_url, adaptive_card):
+    print(f"DEBUG: Sending Teams message...")
+    try:
+        resp = requests.post(webhook_url, headers={"Content-Type": "application/json"}, json=adaptive_card, timeout=10)
+        print(f"DEBUG: Teams response status: {resp.status_code}")
+        resp.raise_for_status()
+        print(f"DEBUG: Teams message sent successfully!")
+        return True
+    except Exception as e:
+        print(f"DEBUG: Failed to send Teams message")
+        return False
 
-    repo_name = data.get("repo_name", "Unknown Repo")
-    branch = data.get("branch", "Unknown Branch")
-    workflow_url = data.get("workflow_url", "#")
-    logs_url = data.get("logs_url", "#")
-    suggestion_url = data.get("suggestion_url", "#")
-    run_id = data.get("run_id", "")
-    error_log = data.get("error_log", "")
+def main():
+    print(f"DEBUG: Script started")
+    
+    webhook_url = os.environ.get("TEAMS_WEBHOOK_URL")
+    repo = os.environ.get("REPO")
+    branch = os.environ.get("BRANCH")
+    actor = os.environ.get("ACTOR")
+    run_id = os.environ.get("RUN_ID")
+    run_number = os.environ.get("RUN_NUMBER")
+    gemini_api_key = os.environ.get("GEMINI_API_KEY")
+    
+    print(f"DEBUG: Environment variables loaded")
 
-    ai_explanation = get_ai_explanation(error_log)
+    try:
+        print(f"DEBUG: Reading error.log...")
+        with open("error.log", "r", encoding="utf-8") as f:
+            log_content = f.read()
+        print(f"DEBUG: error.log read successfully")
+    except Exception as e:
+        log_content = None
+        print(f"DEBUG: Could not read error.log")
 
-    card_payload = {
-        "type": "message",
-        "attachments": [
+    ai_explanation = "Could not read error logs."
+    if log_content and gemini_api_key:
+        print(f"DEBUG: Getting AI explanation...")
+        ai_explanation = get_ai_explanation(log_content, gemini_api_key)
+    elif not gemini_api_key:
+        ai_explanation = "GEMINI_API_KEY not configured."
+
+    error_log_url = f"https://monikaqt75.github.io/springboot-tictactoe-teams-poc/{branch}/{run_number}/error.log"
+    workflow_url = f"https://github.com/{repo}/actions/runs/{run_id}"
+
+    adaptive_card = {
+        "type": "AdaptiveCard",
+        "body": [
             {
-                "contentType": "application/vnd.microsoft.card.adaptive",
-                "content": {
-                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "TextBlock",
+                "text": "Build Failed",
+                "weight": "bolder",
+                "size": "large",
+                "color": "attention"
+            },
+            {
+                "type": "FactSet",
+                "facts": [
+                    {
+                        "title": "Repository:",
+                        "value": repo
+                    },
+                    {
+                        "title": "Branch:",
+                        "value": branch
+                    },
+                    {
+                        "title": "Triggered by:",
+                        "value": actor
+                    },
+                    {
+                        "title": "Run Number:",
+                        "value": str(run_number)
+                    }
+                ]
+            },
+            {
+                "type": "TextBlock",
+                "text": "AI Explanation:",
+                "weight": "bolder",
+                "spacing": "medium"
+            },
+            {
+                "type": "TextBlock",
+                "text": ai_explanation,
+                "wrap": True,
+                "separator": True
+            }
+        ],
+        "actions": [
+            {
+                "type": "Action.ShowCard",
+                "title": "Suggestion Fix",
+                "card": {
                     "type": "AdaptiveCard",
-                    "version": "1.4",
                     "body": [
                         {
                             "type": "TextBlock",
-                            "text": f"🚨 Build Failed: **{repo_name}** on branch **{branch}**",
-                            "wrap": True,
-                            "weight": "Bolder",
-                            "size": "Medium"
+                            "text": "AI Analysis:",
+                            "weight": "bolder"
                         },
                         {
                             "type": "TextBlock",
-                            "text": f"**AI Explanation:**\n{ai_explanation}",
+                            "text": ai_explanation,
                             "wrap": True
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "Useful Links:",
+                            "weight": "bolder",
+                            "spacing": "medium"
                         }
                     ],
                     "actions": [
                         {
                             "type": "Action.OpenUrl",
-                            "title": "🔍 View Workflow",
+                            "title": "View Error Logs",
+                            "url": error_log_url
+                        },
+                        {
+                            "type": "Action.OpenUrl",
+                            "title": "View Workflow",
                             "url": workflow_url
-                        },
-                        {
-                            "type": "Action.OpenUrl",
-                            "title": "📄 View Logs",
-                            "url": logs_url
-                        },
-                        {
-                            "type": "Action.OpenUrl",
-                            "title": "💡 Suggestion Fix",
-                            "url": suggestion_url
-                        },
-                        {
-                            "type": "Action.Http",
-                            "title": "🔁 Re-run Workflow",
-                            "method": "POST",
-                            "url": "https://fastapi-teams-handler.onrender.com/rerun",
-                            "headers": [
-                                {
-                                    "name": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "body": f'{{ "repo_name": "{repo_name}", "run_id": "{run_id}" }}'
                         }
                     ]
                 }
+            },
+            {
+                "type": "Action.OpenUrl",
+                "title": "Re-run Workflow",
+                "url": workflow_url
             }
-        ]
+        ],
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "version": "1.4"
     }
 
-    if TEAMS_WEBHOOK_URL:
-        try:
-            response = requests.post(TEAMS_WEBHOOK_URL, json=card_payload)
-            response.raise_for_status()
-            print("✅ Notification sent to Teams.")
-        except Exception as e:
-            print(f"❌ Failed to send to Teams: {e}")
-    else:
-        print("⚠️ TEAMS_WEBHOOK_URL not set. Card preview:")
-        print(card_payload)
+    print(f"DEBUG: Adaptive card prepared")
+    send_teams_message(webhook_url, adaptive_card)
+    print(f"DEBUG: Script completed")
 
-    return JSONResponse({"status": "ok", "ai_explanation": ai_explanation})
-
-# Endpoint to re-run GitHub workflow
-@app.post("/rerun")
-async def rerun_workflow(request: Request):
-    data = await request.json()
-    repo = data.get("repo_name")
-    run_id = data.get("run_id")
-
-    url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/rerun"
-    headers = {
-        "Authorization": f"Bearer {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github+json"
-    }
-
-    try:
-        response = requests.post(url, headers=headers)
-        response.raise_for_status()
-        return {"status": "success", "message": "Workflow re-run triggered."}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+if __name__ == "__main__":
+    main()
