@@ -48,18 +48,14 @@ def main():
         ],
         "actions": [
             {
-                "type": "Action.Http",
+                "type": "Action.OpenUrl",
                 "title": "Suggestion Fix",
-                "method": "POST",
-                "url": "https://default6be5b754cbd243939dc2d7050d353c.69.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/3e8a18e21b7947baaa67e00003c6dc52/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xAIlxFGvSq_hcco41E6U-QsnZPqU6rtG1W9X02mfqko",
-                "body": json.dumps({"run_number": run_number})
+                "url": f"https://default6be5b754cbd243939dc2d7050d353c.69.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/3e8a18e21b7947baaa67e00003c6dc52/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xAIlxFGvSq_hcco41E6U-QsnZPqU6rtG1W9X02mfqko&run_number={run_number}"
             },
             {
-                "type": "Action.Http",
+                "type": "Action.OpenUrl",
                 "title": "Re-run",
-                "method": "POST",
-                "url": "https://default6be5b754cbd243939dc2d7050d353c.69.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ac327e16aca24d2cb930c63c007fc61f/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MxRZep_gM-8oux-7zvjDUOTNvL0TtA-2hawn14F7LxA",
-                "body": json.dumps({"run_id": run_id})
+                "url": f"https://default6be5b754cbd243939dc2d7050d353c.69.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ac327e16aca24d2cb930c63c007fc61f/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MxRZep_gM-8oux-7zvjDUOTNvL0TtA-2hawn14F7LxA&run_id={run_id}"
             }
         ]
     }
