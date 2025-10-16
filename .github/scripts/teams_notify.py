@@ -5,9 +5,10 @@ from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
-# Read environment variables
+# Environment variables
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 TEAMS_WEBHOOK_URL = os.environ.get("TEAMS_WEBHOOK_URL")
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")  # For rerun
 
 # Function to get AI explanation from Gemini
 def get_ai_explanation(log_content):
@@ -41,12 +42,11 @@ def get_ai_explanation(log_content):
         print(f"Gemini API error: {e}")
         return "Unable to get AI explanation at this time."
 
-# FastAPI endpoint to receive notification
+# Endpoint to send notification to Teams
 @app.post("/notify")
 async def notify_teams(request: Request):
     data = await request.json()
 
-    # Extract data from payload
     repo_name = data.get("repo_name", "Unknown Repo")
     branch = data.get("branch", "Unknown Branch")
     workflow_url = data.get("workflow_url", "#")
@@ -55,10 +55,8 @@ async def notify_teams(request: Request):
     run_id = data.get("run_id", "")
     error_log = data.get("error_log", "")
 
-    # Get AI explanation
     ai_explanation = get_ai_explanation(error_log)
 
-    # Construct Adaptive Card payload
     card_payload = {
         "type": "message",
         "attachments": [
@@ -99,9 +97,17 @@ async def notify_teams(request: Request):
                             "url": suggestion_url
                         },
                         {
-                            "type": "Action.OpenUrl",
+                            "type": "Action.Http",
                             "title": "🔁 Re-run Workflow",
-                            "url": f"https://github.com/{repo_name}/actions/runs/{run_id}"
+                            "method": "POST",
+                            "url": "https://fastapi-teams-handler.onrender.com/rerun",
+                            "headers": [
+                                {
+                                    "name": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": f'{{ "repo_name": "{repo_name}", "run_id": "{run_id}" }}'
                         }
                     ]
                 }
@@ -109,7 +115,6 @@ async def notify_teams(request: Request):
         ]
     }
 
-    # Send to Teams
     if TEAMS_WEBHOOK_URL:
         try:
             response = requests.post(TEAMS_WEBHOOK_URL, json=card_payload)
@@ -122,3 +127,23 @@ async def notify_teams(request: Request):
         print(card_payload)
 
     return JSONResponse({"status": "ok", "ai_explanation": ai_explanation})
+
+# Endpoint to re-run GitHub workflow
+@app.post("/rerun")
+async def rerun_workflow(request: Request):
+    data = await request.json()
+    repo = data.get("repo_name")
+    run_id = data.get("run_id")
+
+    url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/rerun"
+    headers = {
+        "Authorization": f"Bearer {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github+json"
+    }
+
+    try:
+        response = requests.post(url, headers=headers)
+        response.raise_for_status()
+        return {"status": "success", "message": "Workflow re-run triggered."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
