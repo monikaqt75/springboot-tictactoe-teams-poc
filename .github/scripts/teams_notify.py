@@ -48,14 +48,18 @@ def main():
         ],
         "actions": [
             {
-                "type": "Action.OpenUrl",
+                "type": "Action.Http",
                 "title": "Suggestion Fix",
-                "url": f"{fastapi_url}/teams/fix?run_number={run_number}"
+                "method": "POST",
+                "url": "https://default6be5b754cbd243939dc2d7050d353c.69.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/3e8a18e21b7947baaa67e00003c6dc52/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xAIlxFGvSq_hcco41E6U-QsnZPqU6rtG1W9X02mfqko",
+                "body": json.dumps({"run_number": run_number})
             },
             {
-                "type": "Action.OpenUrl",
+                "type": "Action.Http",
                 "title": "Re-run",
-                "url": f"{fastapi_url}/teams/rerun?run_id={run_id}"
+                "method": "POST",
+                "url": "https://default6be5b754cbd243939dc2d7050d353c.69.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ac327e16aca24d2cb930c63c007fc61f/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MxRZep_gM-8oux-7zvjDUOTNvL0TtA-2hawn14F7LxA",
+                "body": json.dumps({"run_id": run_id})
             }
         ]
     }
