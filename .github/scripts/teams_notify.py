@@ -20,7 +20,7 @@ def get_ai_explanation(log_content, gemini_api_key):
         resp = requests.post(gemini_url, headers={"Content-Type": "application/json"}, json=payload, timeout=30)
         print(f"DEBUG: Gemini response status: {resp.status_code}")
         resp.raise_for_status()
-        ai_text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+        ai_text = resp.json()["candidates"][0]["content"][0]["text"]
         print(f"DEBUG: Got AI explanation")
         return ai_text
     except Exception as e:
@@ -42,16 +42,18 @@ def send_teams_message(webhook_url, adaptive_card):
 def main():
     print(f"DEBUG: Script started")
 
+    # Environment variables
     webhook_url = os.environ.get("TEAMS_WEBHOOK_URL")
-    repo = os.environ.get("REPO")
-    branch = os.environ.get("BRANCH")
-    actor = os.environ.get("ACTOR")
-    run_id = os.environ.get("RUN_ID")
-    run_number = os.environ.get("RUN_NUMBER")
+    repo = os.environ.get("REPO", "Unknown Repo")
+    branch = os.environ.get("BRANCH", "master")
+    actor = os.environ.get("ACTOR", "Unknown User")
+    run_id = os.environ.get("RUN_ID", "0")
+    run_number = os.environ.get("RUN_NUMBER", "0")
     gemini_api_key = os.environ.get("GEMINI_API_KEY")
 
     print(f"DEBUG: Environment variables loaded")
 
+    # Read error.log
     try:
         print(f"DEBUG: Reading error.log...")
         with open("error.log", "r", encoding="utf-8") as f:
@@ -61,84 +63,38 @@ def main():
         log_content = None
         print(f"DEBUG: Could not read error.log: {e}")
 
+    # Get AI explanation
     ai_explanation = "Could not read error logs."
     if log_content and gemini_api_key:
-        print(f"DEBUG: Getting AI explanation...")
-        ai_explanation = get_ai_explanation(log_content, gemini_api_key)
+        # Truncate log to 1000 chars for Gemini
+        ai_explanation = get_ai_explanation(log_content[:1000], gemini_api_key)
     elif not gemini_api_key:
         ai_explanation = "GEMINI_API_KEY not configured."
 
+    # Build URLs
     error_log_url = f"https://monikaqt75.github.io/springboot-tictactoe-teams-poc/{branch}/{run_number}/error.log"
     workflow_url = f"https://github.com/{repo}/actions/runs/{run_id}"
 
+    # Adaptive Card
     adaptive_card = {
         "type": "AdaptiveCard",
         "body": [
-            {
-                "type": "TextBlock",
-                "text": "Build Failed",
-                "weight": "bolder",
-                "size": "large",
-                "color": "attention"
-            },
+            {"type": "TextBlock", "text": "Build Failed", "weight": "bolder", "size": "large", "color": "attention"},
             {
                 "type": "FactSet",
                 "facts": [
-                    {
-                        "title": "Repository:",
-                        "value": repo
-                    },
-                    {
-                        "title": "Branch:",
-                        "value": branch
-                    },
-                    {
-                        "title": "Triggered by:",
-                        "value": actor
-                    },
-                    {
-                        "title": "Run Number:",
-                        "value": str(run_number)
-                    }
+                    {"title": "Repository:", "value": repo},
+                    {"title": "Branch:", "value": branch},
+                    {"title": "Triggered by:", "value": actor},
+                    {"title": "Run Number:", "value": str(run_number)}
                 ]
             },
-            {
-                "type": "TextBlock",
-                "text": "AI Explanation:",
-                "weight": "bolder",
-                "spacing": "medium"
-            },
-            {
-                "type": "TextBlock",
-                "text": ai_explanation,
-                "wrap": True,
-                "separator": True
-            }
+            {"type": "TextBlock", "text": "AI Explanation:", "weight": "bolder", "spacing": "medium"},
+            {"type": "TextBlock", "text": ai_explanation, "wrap": True, "separator": True}
         ],
         "actions": [
-            {
-                "type": "Action.Submit",
-                "title": "Suggestion Fix",
-                "data": {
-                    "action": "button_click",
-                    "button_type": "suggest_fix",
-                    "run_id": str(run_id),
-                    "user": actor,
-                    "repo": repo,
-                    "run_number": str(run_number)
-                }
-            },
-            {
-                "type": "Action.Submit",
-                "title": "Re-run Workflow",
-                "data": {
-                    "action": "button_click",
-                    "button_type": "rerun",
-                    "run_id": str(run_id),
-                    "user": actor,
-                    "repo": repo
-                }
-            }
+            {"type": "Action.OpenUrl", "title": "View Logs", "url": error_log_url},
+            {"type": "Action.OpenUrl", "title": "View Workflow", "url": workflow_url}
         ],
         "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
         "version": "1.4"
