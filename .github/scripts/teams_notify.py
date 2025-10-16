@@ -24,7 +24,7 @@ def get_ai_explanation(log_content, gemini_api_key):
         print(f"DEBUG: Got AI explanation")
         return ai_text
     except Exception as e:
-        print(f"DEBUG: Gemini API error occurred")
+        print(f"DEBUG: Gemini API error occurred: {e}")
         return "Unable to get AI explanation at this time."
 
 def send_teams_message(webhook_url, adaptive_card):
@@ -36,12 +36,12 @@ def send_teams_message(webhook_url, adaptive_card):
         print(f"DEBUG: Teams message sent successfully!")
         return True
     except Exception as e:
-        print(f"DEBUG: Failed to send Teams message")
+        print(f"DEBUG: Failed to send Teams message: {e}")
         return False
 
 def main():
     print(f"DEBUG: Script started")
-    
+
     webhook_url = os.environ.get("TEAMS_WEBHOOK_URL")
     repo = os.environ.get("REPO")
     branch = os.environ.get("BRANCH")
@@ -49,7 +49,7 @@ def main():
     run_id = os.environ.get("RUN_ID")
     run_number = os.environ.get("RUN_NUMBER")
     gemini_api_key = os.environ.get("GEMINI_API_KEY")
-    
+
     print(f"DEBUG: Environment variables loaded")
 
     try:
@@ -59,7 +59,7 @@ def main():
         print(f"DEBUG: error.log read successfully")
     except Exception as e:
         log_content = None
-        print(f"DEBUG: Could not read error.log")
+        print(f"DEBUG: Could not read error.log: {e}")
 
     ai_explanation = "Could not read error logs."
     if log_content and gemini_api_key:
@@ -117,46 +117,27 @@ def main():
         ],
         "actions": [
             {
-                "type": "Action.ShowCard",
+                "type": "Action.Submit",
                 "title": "Suggestion Fix",
-                "card": {
-                    "type": "AdaptiveCard",
-                    "body": [
-                        {
-                            "type": "TextBlock",
-                            "text": "AI Analysis:",
-                            "weight": "bolder"
-                        },
-                        {
-                            "type": "TextBlock",
-                            "text": ai_explanation,
-                            "wrap": True
-                        },
-                        {
-                            "type": "TextBlock",
-                            "text": "Useful Links:",
-                            "weight": "bolder",
-                            "spacing": "medium"
-                        }
-                    ],
-                    "actions": [
-                        {
-                            "type": "Action.OpenUrl",
-                            "title": "View Error Logs",
-                            "url": error_log_url
-                        },
-                        {
-                            "type": "Action.OpenUrl",
-                            "title": "View Workflow",
-                            "url": workflow_url
-                        }
-                    ]
+                "data": {
+                    "action": "button_click",
+                    "button_type": "suggest_fix",
+                    "run_id": str(run_id),
+                    "user": actor,
+                    "repo": repo,
+                    "run_number": str(run_number)
                 }
             },
             {
-                "type": "Action.OpenUrl",
+                "type": "Action.Submit",
                 "title": "Re-run Workflow",
-                "url": workflow_url
+                "data": {
+                    "action": "button_click",
+                    "button_type": "rerun",
+                    "run_id": str(run_id),
+                    "user": actor,
+                    "repo": repo
+                }
             }
         ],
         "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
