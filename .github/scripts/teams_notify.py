@@ -36,34 +36,28 @@ def main():
         ai_msg = get_ai_explanation(log_content, gemini_api_key)
 
     card = {
-        "type": "message",
-        "attachments": [{
-            "contentType": "application/vnd.microsoft.card.adaptive",
-            "content": {
-                "type": "AdaptiveCard",
-                "version": "1.4",
-                "body": [
-                    {"type": "TextBlock", "text": "🚨 Build Failed", "weight": "Bolder", "size": "Large", "color": "Attention"},
-                    {"type": "TextBlock", "text": f"**Repository:** {repo}", "wrap": True},
-                    {"type": "TextBlock", "text": f"**Branch:** {branch}", "wrap": True},
-                    {"type": "TextBlock", "text": f"**Triggered by:** {actor}", "wrap": True},
-                    {"type": "TextBlock", "text": "💡 **AI Explanation:**", "weight": "Bolder", "wrap": True},
-                    {"type": "TextBlock", "text": ai_msg, "wrap": True, "separator": True}
-                ],
-                "actions": [
-                    {
-                        "type": "Action.OpenUrl",
-                        "title": "Suggestion Fix",
-                        "url": f"{fastapi_url}/teams/fix?run_number={run_number}"
-                    },
-                    {
-                        "type": "Action.OpenUrl",
-                        "title": "Re-run",
-                        "url": f"{fastapi_url}/teams/rerun?run_id={run_id}"
-                    }
-                ]
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "body": [
+            {"type": "TextBlock", "text": "🚨 Build Failed", "weight": "Bolder", "size": "Large", "color": "Attention"},
+            {"type": "TextBlock", "text": f"**Repository:** {repo}", "wrap": True},
+            {"type": "TextBlock", "text": f"**Branch:** {branch}", "wrap": True},
+            {"type": "TextBlock", "text": f"**Triggered by:** {actor}", "wrap": True},
+            {"type": "TextBlock", "text": "💡 **AI Explanation:**", "weight": "Bolder", "wrap": True},
+            {"type": "TextBlock", "text": ai_msg, "wrap": True, "separator": True}
+        ],
+        "actions": [
+            {
+                "type": "Action.OpenUrl",
+                "title": "Suggestion Fix",
+                "url": f"{fastapi_url}/teams/fix?run_number={run_number}"
+            },
+            {
+                "type": "Action.OpenUrl",
+                "title": "Re-run",
+                "url": f"{fastapi_url}/teams/rerun?run_id={run_id}"
             }
-        }]
+        ]
     }
 
     resp = requests.post(webhook_url, json=card)
