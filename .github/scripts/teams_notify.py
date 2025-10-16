@@ -50,12 +50,12 @@ def main():
             {
                 "type": "Action.OpenUrl",
                 "title": "Suggestion Fix",
-                "url": f"https://default6be5b754cbd243939dc2d7050d353c.69.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c2a2cb3fdfd444e39fd27f0e46e24bc0/triggers/manual/paths/invoke?api-version=1&run_number={run_number}"
+                "url": f"{fastapi_url}/teams/fix?run_number={run_number}"
             },
             {
                 "type": "Action.OpenUrl",
                 "title": "Re-run",
-                "url": f"https://default6be5b754cbd243939dc2d7050d353c.69.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/4ebb0a514be74417b334761536b35fbe/triggers/manual/paths/invoke?api-version=1&run_id={run_id}"
+                "url": f"{fastapi_url}/teams/rerun?run_id={run_id}"
             }
         ]
     }
