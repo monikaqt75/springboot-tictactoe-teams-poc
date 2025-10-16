@@ -41,6 +41,17 @@ jobs:
             echo "error_message=$ERROR_MSG" >> "$GITHUB_OUTPUT"
           fi
           exit $BUILD_STATUS
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Python dependencies
+        run: |
+          pip install fastapi uvicorn
+
+      - name: Run Teams Notification Script
+        run: python .github/scripts/teams_notify.py    
 
       - name: Prepare Error Log
         if: failure()
