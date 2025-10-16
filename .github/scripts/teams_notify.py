@@ -8,7 +8,7 @@ app = FastAPI()
 # Environment variables
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 TEAMS_WEBHOOK_URL = os.environ.get("TEAMS_WEBHOOK_URL")
-GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")  # For rerun
+GITHUB_TOKEN = os.environ.get("GITHUB_PAT")  # For rerun
 
 # Function to get AI explanation from Gemini
 def get_ai_explanation(log_content):
