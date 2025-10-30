@@ -68,4 +68,4 @@ jobs:
         env:
           TEAMS_BUTTONS_WEBHOOK_URL: ${{ secrets.TEAMS_BUTTONS_WEBHOOK_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python .github/scripts/teams_notify_buttons.py
+        run: python .github/scripts/teams_notify.py
