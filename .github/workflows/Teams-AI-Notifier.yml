@@ -1,10 +1,10 @@
-name: Teams-AI-Notifier
+name: Teams-Buttons-Notifier
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - new-poc
+      - pa-method
 
 permissions:
   contents: write
@@ -63,15 +63,9 @@ jobs:
         if: failure()
         run: pip install requests
 
-      - name: Run Teams Notifier 
+      - name: Run NEW Teams Buttons Notifier 
         if: failure()
         env:
-          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
-          REPO: ${{ github.repository }}
-          BRANCH: ${{ github.ref_name }}
-          ACTOR: ${{ github.actor }}
-          RUN_ID: ${{ github.run_id }}
-          RUN_NUMBER: ${{ github.run_number }}
+          TEAMS_BUTTONS_WEBHOOK_URL: ${{ secrets.TEAMS_BUTTONS_WEBHOOK_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          FASTAPI_HANDLER_URL: ${{ secrets.FASTAPI_HANDLER_URL }}
-        run: python .github/scripts/teams_notify.py
+        run: python .github/scripts/teams_notify_buttons.py
