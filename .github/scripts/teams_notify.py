@@ -1,67 +1,52 @@
 #!/usr/bin/env python3
 import os
-import json
 import requests
 
 def get_ai_explanation(log_content, gemini_api_key):
-    prompt = f"You are an expert DevOps engineer. Please analyze this build failure log and provide a clear, professional explanation of what went wrong. Be concise and helpful.\n\nLog:\n{log_content}\n\nProvide only the error explanation in a professional tone."
-    gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gemini_api_key}"
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
+    prompt = f"Explain this build error briefly:\n\n{log_content}"
     try:
-        resp = requests.post(gemini_url, headers={"Content-Type": "application/json"}, json=payload, timeout=30)
+        gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gemini_api_key}"
+        payload = {"contents": [{"parts": [{"text": prompt}]}]}
+        resp = requests.post(gemini_url, json=payload, timeout=30)
         resp.raise_for_status()
-        ai_text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
-        return ai_text
-    except Exception as e:
-        return f"⚠️ AI explanation failed: {str(e)}"
+        return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+    except:
+        return "AI explanation unavailable"
 
 def main():
-    webhook_url = os.environ["TEAMS_WEBHOOK_URL"]
-    repo = os.environ["REPO"]
-    branch = os.environ["BRANCH"]
-    actor = os.environ["ACTOR"]
-    run_id = os.environ["RUN_ID"]
-    run_number = os.environ["RUN_NUMBER"]
+    # Get from new Power Automate flow (we'll create next)
+    webhook_url = os.environ["TEAMS_BUTTONS_WEBHOOK_URL"]
+    repo = os.environ["GITHUB_REPOSITORY"]
+    branch = os.environ["GITHUB_REF_NAME"]
+    actor = os.environ["GITHUB_ACTOR"]
+    run_id = os.environ["GITHUB_RUN_ID"]
+    run_number = os.environ["GITHUB_RUN_NUMBER"]
     gemini_api_key = os.environ.get("GEMINI_API_KEY")
-    fastapi_url = os.environ["FASTAPI_HANDLER_URL"]
 
+    # Read error log
     try:
-        with open("error.log", "r", encoding="utf-8") as f:
+        with open("error.log", "r") as f:
             log_content = f.read()
-    except Exception as e:
-        log_content = None
+    except:
+        log_content = "No error log"
 
-    ai_msg = "⚠️ Could not read error.log"
-    if log_content and gemini_api_key:
-        ai_msg = get_ai_explanation(log_content, gemini_api_key)
+    ai_msg = get_ai_explanation(log_content, gemini_api_key)
 
-    card = {
-        "type": "AdaptiveCard",
-        "version": "1.4",
-        "body": [
-            {"type": "TextBlock", "text": "🚨 Build Failed", "weight": "Bolder", "size": "Large", "color": "Attention"},
-            {"type": "TextBlock", "text": f"**Repository:** {repo}", "wrap": True},
-            {"type": "TextBlock", "text": f"**Branch:** {branch}", "wrap": True},
-            {"type": "TextBlock", "text": f"**Triggered by:** {actor}", "wrap": True},
-            {"type": "TextBlock", "text": "💡 **AI Explanation:**", "weight": "Bolder", "wrap": True},
-            {"type": "TextBlock", "text": ai_msg, "wrap": True, "separator": True}
-        ],
-        "actions": [
-            {
-                "type": "Action.OpenUrl",
-                "title": "Suggestion Fix",
-                "url": f"{fastapi_url}/teams/fix?run_number={run_number}"
-            },
-            {
-                "type": "Action.OpenUrl",
-                "title": "Re-run",
-                "url": f"{fastapi_url}/teams/rerun?run_id={run_id}"
-            }
-        ]
+    # Send to NEW Power Automate flow
+    payload = {
+        "repo": repo,
+        "branch": branch,
+        "actor": actor,
+        "run_id": run_id,
+        "run_number": run_number,
+        "ai_explanation": ai_msg
     }
 
-    resp = requests.post(webhook_url, json=card)
-    print(f"Teams notification sent: {resp.status_code}")
+    try:
+        resp = requests.post(webhook_url, json=payload)
+        print(f"NEW Teams buttons notification sent: {resp.status_code}")
+    except Exception as e:
+        print(f"Failed to send NEW notification: {e}")
 
 if __name__ == "__main__":
     main()
