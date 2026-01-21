@@ -92,7 +92,7 @@ def main():
         return
 
     try:
-        resp = requests.post(TEAMS_WEBHOOK_URL, headers={"Content-Type": "application/json"}, json=card)
+        resp = requests.post(TEAMS_BUTTONS_WEBHOOK_URL, headers={"Content-Type": "application/json"}, json=card)
         if resp.status_code in [200, 201]:
             print("✅ Teams notification sent successfully!")
         else:
