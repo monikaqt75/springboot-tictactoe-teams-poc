@@ -11,7 +11,7 @@ AZURE_OPENAI_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY")
 AZURE_OPENAI_DEPLOYMENT = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
 AZURE_OPENAI_API_VERSION = os.environ.get("AZURE_OPENAI_API_VERSION")
 
-TEAMS_WEBHOOK_URL = os.environ.get("TEAMS_WEBHOOK_URL")
+TEAMS_BUTTONS_WEBHOOK_URL = os.environ.get("TEAMS_BUTTONS_WEBHOOK_URL")
 FASTAPI_BASE_URL = os.environ.get("FASTAPI_BASE_URL")
 
 repo = os.environ.get("GITHUB_REPOSITORY", "unknown/repo")
@@ -87,8 +87,8 @@ def main():
     }
 
     # Send notification
-    if not TEAMS_WEBHOOK_URL:
-        print("❌ TEAMS_WEBHOOK_URL not set. Cannot send notification.")
+    if not TEAMS_BUTTONS_WEBHOOK_URL:
+        print("❌ TEAMS_BUTTONS_WEBHOOK_URL not set. Cannot send notification.")
         return
 
     try:
