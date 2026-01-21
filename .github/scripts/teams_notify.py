@@ -4,7 +4,7 @@ import json
 import requests
 
 # -----------------------------
-# Load environment variables
+# Load environment variables (from GitHub Secrets)
 # -----------------------------
 AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT")
 AZURE_OPENAI_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY")
@@ -27,6 +27,9 @@ def get_ai_explanation(log_content: str) -> str:
     """
     Sends the build log to Azure OpenAI GPT-35-Turbo and returns step-by-step fix suggestions
     """
+    if not all([AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, AZURE_OPENAI_DEPLOYMENT, AZURE_OPENAI_API_VERSION]):
+        return "⚠️ Azure OpenAI secrets not set."
+
     prompt = f"Analyze this build failure and provide step-by-step fix suggestions:\n\n{log_content}"
 
     url = f"{AZURE_OPENAI_ENDPOINT}/openai/deployments/{AZURE_OPENAI_DEPLOYMENT}/chat/completions?api-version={AZURE_OPENAI_API_VERSION}"
@@ -84,7 +87,7 @@ def main():
     # Send notification to Teams webhook
     try:
         resp = requests.post(TEAMS_WEBHOOK_URL, headers={"Content-Type": "application/json"}, json=payload)
-        if resp.status_code == 200 or resp.status_code == 201:
+        if resp.status_code in [200, 201]:
             print(f"✅ Teams notification sent successfully!")
         else:
             print(f"⚠️ Teams notification failed: {resp.status_code} {resp.text}")
