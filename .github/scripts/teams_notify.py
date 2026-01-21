@@ -12,7 +12,7 @@ AZURE_OPENAI_DEPLOYMENT = os.environ["AZURE_OPENAI_DEPLOYMENT"]
 AZURE_OPENAI_API_VERSION = os.environ["AZURE_OPENAI_API_VERSION"]
 
 TEAMS_WEBHOOK_URL = os.environ["TEAMS_WEBHOOK_URL"]
-FASTAPI_BASE_URL = os.environ.get("FASTAPI_BASE_URL", "")
+FASTAPI_BASE_URL = os.environ["FASTAPI_BASE_URL"]
 
 repo = os.environ.get("GITHUB_REPOSITORY", "unknown/repo")
 branch = os.environ.get("GITHUB_REF_NAME", "unknown-branch")
@@ -25,7 +25,7 @@ run_number = os.environ.get("GITHUB_RUN_NUMBER", "0")
 # -----------------------------
 def get_ai_explanation(log_content: str) -> str:
     """
-    Sends the build log to Azure OpenAI GPT-35-Turbo and returns suggested fix
+    Sends the build log to Azure OpenAI GPT-35-Turbo and returns step-by-step fix suggestions
     """
     prompt = f"Analyze this build failure and provide step-by-step fix suggestions:\n\n{log_content}"
 
@@ -61,7 +61,7 @@ def main():
     # Get AI explanation
     ai_msg = get_ai_explanation(log_content)
 
-    # Prepare Teams message payload
+    # Prepare Teams message payload with buttons
     payload = {
         "repo": repo,
         "branch": branch,
@@ -70,17 +70,26 @@ def main():
         "run_number": run_number,
         "ai_explanation": ai_msg,
         "buttons": [
-            {"type": "suggest-fix", "url": f"{FASTAPI_BASE_URL}/api/buttons/suggest-fix"},
-            {"type": "rerun", "url": f"{FASTAPI_BASE_URL}/api/buttons/rerun"}
+            {
+                "type": "suggest-fix",
+                "url": f"{FASTAPI_BASE_URL}/api/buttons/suggest-fix"
+            },
+            {
+                "type": "rerun",
+                "url": f"{FASTAPI_BASE_URL}/api/buttons/rerun"
+            }
         ]
     }
 
     # Send notification to Teams webhook
     try:
         resp = requests.post(TEAMS_WEBHOOK_URL, headers={"Content-Type": "application/json"}, json=payload)
-        print(f"Teams notification sent, status: {resp.status_code}")
+        if resp.status_code == 200 or resp.status_code == 201:
+            print(f"✅ Teams notification sent successfully!")
+        else:
+            print(f"⚠️ Teams notification failed: {resp.status_code} {resp.text}")
     except Exception as e:
-        print(f"Failed to send Teams notification: {e}")
+        print(f"❌ Failed to send Teams notification: {e}")
 
 if __name__ == "__main__":
     main()
