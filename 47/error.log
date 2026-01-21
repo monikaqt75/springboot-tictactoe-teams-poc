@@ -30,8 +30,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  6.273 s
-[INFO] Finished at: 2026-01-21T07:18:21Z
+[INFO] Total time:  5.716 s
+[INFO] Finished at: 2026-01-21T08:38:35Z
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) on project tictactoe: Compilation failure
 [ERROR] /home/runner/work/springboot-tictactoe-teams-poc/springboot-tictactoe-teams-poc/src/main/java/com/rehan/tictactoe/Application.java:[10,9] not a statement
