@@ -6,13 +6,13 @@ import requests
 # -----------------------------
 # Load environment variables
 # -----------------------------
-AZURE_OPENAI_ENDPOINT = os.environ["AZURE_OPENAI_ENDPOINT"]
-AZURE_OPENAI_API_KEY = os.environ["AZURE_OPENAI_API_KEY"]
-AZURE_OPENAI_DEPLOYMENT = os.environ["AZURE_OPENAI_DEPLOYMENT"]
-AZURE_OPENAI_API_VERSION = os.environ["AZURE_OPENAI_API_VERSION"]
+AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT")
+AZURE_OPENAI_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY")
+AZURE_OPENAI_DEPLOYMENT = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
+AZURE_OPENAI_API_VERSION = os.environ.get("AZURE_OPENAI_API_VERSION")
 
-TEAMS_WEBHOOK_URL = os.environ["TEAMS_WEBHOOK_URL"]
-FASTAPI_BASE_URL = os.environ["FASTAPI_BASE_URL"]
+TEAMS_WEBHOOK_URL = os.environ.get("TEAMS_WEBHOOK_URL")
+FASTAPI_BASE_URL = os.environ.get("FASTAPI_BASE_URL")
 
 repo = os.environ.get("GITHUB_REPOSITORY", "unknown/repo")
 branch = os.environ.get("GITHUB_REF_NAME", "unknown-branch")
